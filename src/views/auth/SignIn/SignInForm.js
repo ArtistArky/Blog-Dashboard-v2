@@ -19,17 +19,14 @@ const SignInForm = props => {
 		className, 
 	} = props
 
-	console.log(process.env.NODE_ENV)
-
 	const [message, setMessage] = useTimeOutMessage()
 
-	const { signIn } = useAuth()
+	const { googleSignin } = useAuth()
 
-	const onSignIn = async (values, setSubmitting) => {
-		const { userName, password } = values
+	const onSignIn = async (setSubmitting) => {
 		setSubmitting(true)
 		
-		const result = await signIn({ userName, password })
+		const result = await googleSignin()
 
 		if (result.status === 'failed') {
 			setMessage(result.message)

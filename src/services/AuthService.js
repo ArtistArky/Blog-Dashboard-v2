@@ -1,4 +1,5 @@
 import ApiService from './ApiService'
+import supabaseClient from 'utils/supabaseClient';
 
 export async function apiSignIn (data) {
     return ApiService.fetchData({
@@ -6,6 +7,18 @@ export async function apiSignIn (data) {
         method: 'post',
         data
     })
+}
+
+export async function sbGoogleSignin () {
+    const { user, session, error } = await supabaseClient.auth.signIn({
+        provider: 'google'
+    },
+    {
+        scopes: 'https://www.googleapis.com/auth/drive.readonly',
+    })
+    return {
+        user, session, error
+    }
 }
 
 export async function apiSignUp (data) {
