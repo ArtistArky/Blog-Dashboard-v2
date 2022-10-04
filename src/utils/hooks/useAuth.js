@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from 'react-redux'
 import { setUser, initialState } from 'store/auth/userSlice'
-import { apiSignIn, sbGoogleSignin, apiSignOut } from 'services/AuthService'
+import { apiSignIn, sbGoogleSignin, apiSignOut, sbGoogleSignOut } from 'services/AuthService'
 import { onSignInSuccess, onSignOutSuccess } from 'store/auth/sessionSlice'
 import appConfig from 'configs/app.config'
 import { REDIRECT_URL_KEY } from 'constants/app.constant'
@@ -58,7 +58,7 @@ function useAuth() {
 			if (resp.session && resp.user) {
 				const { access_token } = resp.session
 				dispatch(onSignInSuccess(access_token))
-				if(resp.data.user) {
+				if(resp.user) {
 					dispatch(setUser(resp.user || { 
 						avatar: '', 
 						userName: 'Anonymous', 
@@ -76,7 +76,7 @@ function useAuth() {
 		} catch (errors) {
 			return {
                 status: 'failed',
-                message: errors?.response?.data?.message || errors.toString()
+                message: errors?.message || errors.toString()
             }
 		}
     }
@@ -85,6 +85,15 @@ function useAuth() {
 		dispatch(onSignOutSuccess())
 		dispatch(setUser(initialState))
 		navigate(appConfig.unAuthenticatedEntryPath)
+	}
+
+    const googlesignOut = async () => {
+		try {
+			await sbGoogleSignOut()
+			handleSignOut()
+		} catch (errors) {
+			handleSignOut()
+		}
 	}
 
     const signOut = async () => {
@@ -100,6 +109,7 @@ function useAuth() {
         authenticated: token && signedIn,
         signIn,
 		googleSignin,
+		googlesignOut,
         signOut
     }
 }

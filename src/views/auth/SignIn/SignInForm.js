@@ -4,9 +4,13 @@ import useTimeOutMessage from 'utils/hooks/useTimeOutMessage'
 import { Form, Formik } from 'formik'
 import * as Yup from 'yup'
 import useAuth from 'utils/hooks/useAuth'
-import googleSvg from 'assets/svg/Google.svg';
-import supabaseClient from 'utils/supabaseClient';
-import { suspend } from 'suspend-react'
+import googleSvg from 'assets/svg/Google.svg'
+import supabaseClient from 'utils/supabaseClient'
+import appConfig from 'configs/app.config'
+import { onSignInSuccess, onSignOutSuccess } from 'store/auth/sessionSlice'
+import { setUser } from 'store/auth/userSlice'
+import { useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux';
 
 const validationSchema = Yup.object().shape({
 	userName: Yup.string().required('Please enter your user name'),
@@ -16,7 +20,11 @@ const validationSchema = Yup.object().shape({
 
 const SignInForm = props => {
 
-	const [user, setUser] = useState();
+    const dispatch = useDispatch()
+
+    const navigate = useNavigate()
+
+	//const [user, setUser] = useState();
 
 	const { 
 		disableSubmit = false, 
@@ -27,7 +35,8 @@ const SignInForm = props => {
 
 	const { googleSignin } = useAuth()
 
-	const onSignIn = async (setSubmitting) => {
+	const onSignIn = async (values, setSubmitting) => {
+		console.log('Insignin')
 		setSubmitting(true)
 		
 		const result = await googleSignin()
@@ -40,13 +49,39 @@ const SignInForm = props => {
 	}
 
 	useEffect(() => {
-		const authUser = suspend(async () => {
-			return supabaseClient.auth.user();
-		}, []);
-		setUser(authUser);
+		const getAuthUser = async () => {
+			const user = await supabaseClient.auth.user();
+			const session = await supabaseClient.auth.session();
+			return {user, session};
+		}
+		getAuthUser().then((res) => {
+			if(res.user == null) {
+				setUser(null);
+				console.log(res.user);
+			}else {
+				console.log(res.user);
+				const { access_token } = res.session
+				dispatch(onSignInSuccess(access_token))
+				if(res.user) {
+					const userData = {
+						id: res.user.id,
+						...res.user.user_metadata,
+						authority: ['USER'], 
+					}
+					dispatch(setUser(userData || { 
+						avatar: '', 
+						userName: 'Anonymous', 
+						authority: ['USER'], 
+						email: ''
+					}))
+				}
+				//const redirectUrl = query.get(REDIRECT_URL_KEY)
+				navigate(appConfig.authenticatedEntryPath)
+			}
+		});
 		
 	}, [])
-	
+
 	//console.log(user);
 
 	return (
@@ -58,7 +93,6 @@ const SignInForm = props => {
 					password: '', 
 					rememberMe: true 
 				}}
-				validationSchema={validationSchema}
 				onSubmit={(values, { setSubmitting }) => {
 					if(!disableSubmit) {
 						onSignIn(values, setSubmitting)
