@@ -63,6 +63,7 @@
     "redux": "^4.1.1",
     "redux-persist": "^6.0.0",
     "source-map-explorer": "^2.5.2",
+    "suspend-react": "^0.0.8",
     "tailwind-safelist-generator": "^0.1.2",
     "twin.macro": "^3.0.0-rc.1",
     "web-vitals": "^2.1.4",
