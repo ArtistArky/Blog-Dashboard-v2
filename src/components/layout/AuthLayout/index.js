@@ -1,6 +1,6 @@
 import React from 'react'
-import Side from './Side'
-// import Cover from './Cover'
+//import Side from './Side'
+import Cover from './Cover'
 // import Simple from './Simple'
 import View from 'views'
 import { useSelector } from 'react-redux'
@@ -16,9 +16,9 @@ const AuthLayout = props => {
 				layoutType === LAYOUT_TYPE_BLANK ? 
 				<View {...props}/> 
 				: 
-				<Side>
+				<Cover>
 					<View {...props}/>
-				</Side>
+				</Cover>
 			}
 		</div>
 	)

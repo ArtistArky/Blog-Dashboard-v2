@@ -1,10 +1,10 @@
 import React from 'react'
-import { Input, Button, Checkbox, FormItem, FormContainer, Alert } from 'components/ui'
-import { PasswordInput, ActionLink } from 'components/shared'
+import { Button, FormContainer, Alert } from 'components/ui'
 import useTimeOutMessage from 'utils/hooks/useTimeOutMessage'
-import { Field, Form, Formik } from 'formik'
+import { Form, Formik } from 'formik'
 import * as Yup from 'yup'
 import useAuth from 'utils/hooks/useAuth'
+import googleSvg from 'assets/svg/Google.svg';
 
 const validationSchema = Yup.object().shape({
 	userName: Yup.string().required('Please enter your user name'),
@@ -17,9 +17,9 @@ const SignInForm = props => {
 	const { 
 		disableSubmit = false, 
 		className, 
-		forgotPasswordUrl = '/forgot-password',
-		signUpUrl = '/sign-up'
 	} = props
+
+	console.log(process.env.NODE_ENV)
 
 	const [message, setMessage] = useTimeOutMessage()
 
@@ -59,7 +59,7 @@ const SignInForm = props => {
 				{({touched, errors, isSubmitting}) => (
 					<Form>
 						<FormContainer>
-							<FormItem
+							{/* <FormItem
 								label="User Name"
 								invalid={errors.userName && touched.userName}
 								errorMessage={errors.userName}
@@ -98,7 +98,14 @@ const SignInForm = props => {
 								<ActionLink to={signUpUrl}>
 									Sign up
 								</ActionLink>
-							</div>
+							</div> */}
+							<Button block loading={isSubmitting} icon={<img
+								className="flex-shrink-0"
+								src={googleSvg}
+								alt={'Google'}
+								/>} type="submit">
+								{ isSubmitting ? 'Signing in...' : 'Sign In With Google' }
+							</Button>
 						</FormContainer>
 					</Form>
 				)}
