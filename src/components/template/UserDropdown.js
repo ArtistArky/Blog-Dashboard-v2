@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useEffect} from 'react'
 import { Avatar, Dropdown } from 'components/ui'
 import withHeaderItem from 'utils/hoc/withHeaderItem'
 import useAuth from 'utils/hooks/useAuth'
@@ -16,16 +16,16 @@ const dropdownItemList = [
 
 export const UserDropdown = ({ className }) => {
 
-	const { avatar, userName, authority, email } = useSelector((state) => state.auth.user)
+	const { avatar_url, full_name, authority, email } = useSelector((state) => state.auth.user);
 
-	const { signOut } = useAuth()
+	const { googlesignOut } = useAuth()
 
 	const UserAvatar = (
 		<div className={classNames(className, 'flex items-center gap-2')}>
-			<Avatar size={32} shape="circle" src={avatar} />
+			<Avatar size={32} shape="circle" src={avatar_url} />
 			<div className="hidden md:block">
 				<div className="text-xs capitalize">{authority[0] || 'guest'}</div>
-				<div className="font-bold">{userName}</div>
+				<div className="font-bold">{full_name}</div>
 			</div>
 		</div>
 	)
@@ -35,9 +35,9 @@ export const UserDropdown = ({ className }) => {
 			<Dropdown menuStyle={{minWidth: 240}} renderTitle={UserAvatar} placement="bottom-end">
 				<Dropdown.Item variant="header">
 					<div className="py-2 px-3 flex items-center gap-2">
-						<Avatar shape="circle" src={avatar} />
+						<Avatar shape="circle" src={avatar_url} />
 						<div>
-							<div className="font-bold text-gray-900 dark:text-gray-100">{userName}</div>
+							<div className="font-bold text-gray-900 dark:text-gray-100">{full_name}</div>
 							<div className="text-xs">{email}</div>
 						</div>
 					</div>
@@ -52,7 +52,7 @@ export const UserDropdown = ({ className }) => {
 					</Dropdown.Item>
 				))}
 				<Dropdown.Item variant="divider" />
-				<Dropdown.Item onClick={signOut} eventKey="Sign Out" className="gap-2">
+				<Dropdown.Item onClick={googlesignOut} eventKey="Sign Out" className="gap-2">
 					<span className="text-xl opacity-50">
 						<HiOutlineLogout />
 					</span>

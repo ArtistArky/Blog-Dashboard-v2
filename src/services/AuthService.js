@@ -21,6 +21,11 @@ export async function sbGoogleSignin () {
     }
 }
 
+export async function sbGoogleSignOut () {
+    const signout = await supabaseClient.auth.signOut();
+    return signout;
+}
+
 export async function apiSignUp (data) {
     return ApiService.fetchData({
         url: '/sign-up',
