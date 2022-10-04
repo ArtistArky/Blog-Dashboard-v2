@@ -1,10 +1,12 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button, FormContainer, Alert } from 'components/ui'
 import useTimeOutMessage from 'utils/hooks/useTimeOutMessage'
 import { Form, Formik } from 'formik'
 import * as Yup from 'yup'
 import useAuth from 'utils/hooks/useAuth'
 import googleSvg from 'assets/svg/Google.svg';
+import supabaseClient from 'utils/supabaseClient';
+import { suspend } from 'suspend-react'
 
 const validationSchema = Yup.object().shape({
 	userName: Yup.string().required('Please enter your user name'),
@@ -13,6 +15,8 @@ const validationSchema = Yup.object().shape({
 })
 
 const SignInForm = props => {
+
+	const [user, setUser] = useState();
 
 	const { 
 		disableSubmit = false, 
@@ -34,6 +38,16 @@ const SignInForm = props => {
 
 		setSubmitting(false)
 	}
+
+	useEffect(() => {
+		const authUser = suspend(async () => {
+			return supabaseClient.auth.user();
+		}, []);
+		setUser(authUser);
+		
+	}, [])
+	
+	//console.log(user);
 
 	return (
 		<div className={className}>
