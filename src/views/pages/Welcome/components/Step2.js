@@ -1,12 +1,20 @@
 import React from 'react'
 import { Button, FormItem, FormContainer, Select, Input } from 'components/ui'
-import { Field, Form, Formik } from 'formik'
+import { Field, Form, Formik, ErrorMessage } from 'formik'
 import { HiArrowSmLeft } from 'react-icons/hi'
 import * as Yup from 'yup'
+import { useDispatch, useSelector } from 'react-redux'
+import { stepOne } from 'store/onboard/onboardSlice'
 
 const validationSchema = Yup.object().shape({
-	organizationName: Yup.string().required('Organization name is required'),
-	organizationSize: Yup.string().required('Please select your organization size'),
+	blogName: Yup.string().required('Blog name is required').matches(
+		/^([a-z0-9]){6,30}$/,
+		"Blog name can only contain lowercase alphabets & digits with a reange of 6-30 characters"
+	  ),
+	title: Yup.string().required('Blog title is required').matches(
+		/^([A-Za-z0-9 ]){6,30}$/,
+		"Blog Title can only contain alphabets & digits with a reange of 6-30 characters"
+	  ),
 })
 
 const sizes = [
@@ -18,17 +26,24 @@ const sizes = [
 ]
 
 const Step2 = ({ onNext, onBack }) => {
+
+    const dispatch = useDispatch()
+
+	const stepone =  useSelector((state) => state.onboard)
+
 	return (
 		<div className="text-center">
-			<h3 className="mb-2">Tell us about your organization</h3>
+			<h3 className="mb-2">Tell us about your Blog</h3>
 			<div className="mt-8 max-w-[600px] lg:min-w-[600px] mx-auto">
 				<Formik
 					initialValues={{
-						organizationName: '',
-						organizationSize: ''
+						blogName: stepone.blog_name,
+						title: stepone.title
 					}}
 					validationSchema={validationSchema}
 					onSubmit={(values) => {
+						console.log(values)
+						dispatch(stepOne(values))
 						onNext?.()
 					}}
 				>
@@ -37,35 +52,30 @@ const Step2 = ({ onNext, onBack }) => {
 							<Form>
 								<FormContainer>
 									<FormItem
-										label="Name of your organization"
-										invalid={errors.organizationName && touched.organizationName}
-										errorMessage={errors.organizationName}
+										label="Blog name"
+										invalid={errors.blogName && touched.blogName}
 									>
 										<Field 
 											type="text" 
 											autoComplete="off" 
-											name="organizationName" 
-											placeholder="Organization Name..." 
+											name="blogName" 
+											placeholder="Blog name..." 
 											component={Input} 
 										/>
+										<ErrorMessage name="blogName"  render={msg => <div className='text-red-500 text-left'>{msg}</div>} />
 									</FormItem>
 									<FormItem
-										label="Size of your organization"
-										invalid={errors.organizationSize && touched.organizationSize}
-										errorMessage={errors.organizationSize}
+										label="Blog title"
+										invalid={errors.title && touched.title}
 									>
-										<Field name="organizationSize">
-											{({ field, form }) => (
-												<Select
-													placeholder="Organization Size..."
-													field={field}
-													form={form}
-													options={sizes}
-													value={sizes.filter(size => size.value === values.organizationSize)}
-													onChange={size => form.setFieldValue(field.name, size.value)}
-												/>
-											)}
-										</Field>
+										<Field 
+											type="text" 
+											autoComplete="off" 
+											name="title" 
+											placeholder="Blog title..." 
+											component={Input} 
+										/>
+										<ErrorMessage name="title"  render={msg => <div className='text-red-500 text-left'>{msg}</div>} />
 									</FormItem>
 									<FormItem>
 										<Button block variant="solid" type="submit">Continue</Button>

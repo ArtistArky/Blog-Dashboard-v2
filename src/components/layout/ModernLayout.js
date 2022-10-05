@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Header from 'components/template/Header'
 import SidePanel from 'components/template/SidePanel'
 import UserDropdown from 'components/template/UserDropdown'
@@ -6,6 +6,10 @@ import SideNavToggle from 'components/template/SideNavToggle'
 import MobileNav from 'components/template/MobileNav'
 import SideNav from 'components/template/SideNav'
 import View from 'views'
+import { sbAuthor } from 'services/ApiService'
+import { Error } from 'components/ui'
+import { initialState, setAuthorData, updateOnboard } from 'store/userData/authorSlice'
+import { useDispatch, useSelector } from 'react-redux';
 
 const HeaderActionsStart = () => {
 	return (
@@ -26,21 +30,72 @@ const HeaderActionsEnd = () => {
 }
 
 const ModernLayout = props => {
-	return (
-		<div className="app-layout-modern flex flex-auto flex-col">
-			<div className="flex flex-auto min-w-0">
-				<SideNav />
-				<div className="flex flex-col flex-auto min-h-screen min-w-0 relative w-full bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700">
-					<Header 
-						className="border-b border-gray-200 dark:border-gray-700" 
-						headerEnd={<HeaderActionsEnd />} 
-						headerStart={<HeaderActionsStart />}
-					/>
-					<View {...props} />
+
+    const dispatch = useDispatch()
+
+	var author = useSelector((state) => state.userData.author)
+
+	const [error, setError] = useState(false);
+
+	const authID = useSelector((state) => state.auth.user.id)
+
+	const checkAuthor = async () => {
+		console.log(author);
+		if(author === initialState) {
+			fetchAuthorData();
+		}else if(author.username === null) {
+			dispatch(updateOnboard(false));
+		}else {
+			dispatch(updateOnboard(true));
+		}
+	}
+
+	const fetchAuthorData = async () => {
+		console.log(authID);
+		await sbAuthor(authID).then(({ data,error }) => {
+			if(error) {
+				throw setError(true);
+			}
+			if(data) {
+				setError(false);
+				author = data[0];
+				dispatch(setAuthorData(data[0]))
+				checkAuthor();
+			}
+		})
+	}
+
+	useEffect(() => {
+		checkAuthor();
+	}, [])
+	
+
+	if(error == true) {
+
+		return (
+			<Error />
+		)
+
+	}else {
+		const onboardStatus = author.onboard;
+		return (
+			<div className="app-layout-modern flex flex-auto flex-col">
+				<div className="flex flex-auto min-w-0">
+					{
+						onboardStatus === true && <SideNav />
+					}
+					<div className="flex flex-col flex-auto min-h-screen min-w-0 relative w-full bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700">
+						<Header 
+							className="border-b border-gray-200 dark:border-gray-700" 
+							headerEnd={<HeaderActionsEnd />} 
+							headerStart={onboardStatus === true && <HeaderActionsStart />}
+						/>
+						<View {...props} />
+					</div>
 				</div>
 			</div>
-		</div>
-	)
+		)
+	}
 }
 
 export default ModernLayout
