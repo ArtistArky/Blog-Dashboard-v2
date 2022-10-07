@@ -1,7 +1,7 @@
 import React from 'react'
 import authRoute from './authRoute'
 import pagesRoute from './pagesRoute'
-import appsRoute from './appsRoute'
+import { APP_PREFIX_PATH } from 'constants/route.constant'
 
 export const publicRoutes = [
     ...authRoute
@@ -51,6 +51,11 @@ export const protectedRoutes = [
         component: React.lazy(() => import('views/demo/GroupCollapseMenuItemView2')),
         authority: [],
     },
+    {
+        key: 'appsAccount.settings',
+        path: `${APP_PREFIX_PATH}/account/settings/profile`,
+        component: React.lazy(() => import('views/demo/Profile')),
+        authority: [],
+    },
     ...pagesRoute,
-    ...appsRoute
 ]

@@ -27,15 +27,6 @@ const sizes = [
 
 const { Addon } = InputGroup 
 
-export const BlogNameInp = ({values}) => {
-	return (
-		<InputGroup className="mb-4">
-			<Input value={values.blogName} />
-			<Addon>.inkflow.com</Addon>
-		</InputGroup>
-	)
-}
-
 const Step2 = ({ onNext, onBack }) => {
 
     const dispatch = useDispatch()
