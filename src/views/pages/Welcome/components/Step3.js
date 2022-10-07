@@ -46,7 +46,7 @@ const Step3 = ({ onNext, onBack }) => {
 	const [logoImgURL, setlogoImgURL] = useState(stepsLogo)
 	const [faviconImgURL, setfaviconImgURL] = useState(stepsFavicon)
 
-	const [btnLoading, setbtnLoading] = useState(false);
+	const [btnLoading, setbtnLoading] = useState(false)
 
 	useEffect(() => {
 		// if(steps.logoimg == null){
@@ -198,8 +198,8 @@ const Step3 = ({ onNext, onBack }) => {
 													onFileRemove={() => setlogoImgURL()}
 													onChange={(file)=> {
 														const url = URL.createObjectURL(file[0])
-														const fileName = 'logo.png'
-														const filetype = 'image/png'
+														const fileName = 'logo.jpeg'
+														const filetype = 'image/jpeg'
 														const convertedBlobFile = new File([file[0]], fileName, { type: filetype, lastModified: Date.now()})
 														// console.log(convertedBlobFile)
 														form.setFieldValue(field.name, convertedBlobFile)
