@@ -25,6 +25,7 @@ export const authorSlice = createSlice({
         updateAuthorData: (state, action) => {
             state.title = action.payload.title
             state.description = action.payload.description
+            state.username = action.payload.username
             state.logoimg = action.payload.logoimg
             state.faviconimg = action.payload.faviconimg
         },

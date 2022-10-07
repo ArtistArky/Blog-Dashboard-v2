@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import * as Yup from 'yup'
 import { sbUpload, sbProfileUpdate } from 'services/ApiService'
 import { stepTwo } from 'store/onboard/onboardSlice'
+import { updateAuthorData } from 'store/userData/authorSlice'
 
 const roles = [
 	{ value: 'softwareEngineer', label: 'Software Engineer', icon: <HiOutlineCode /> },
@@ -70,6 +71,7 @@ const Step3 = ({ onNext, onBack }) => {
 	}
 
     const submitOnboard = async (values) => {
+		setbtnLoading(true);
 		dispatch(stepTwo(values))
 
 		const name = ['logo.jpeg', 'favicon.jpeg']
@@ -83,6 +85,7 @@ const Step3 = ({ onNext, onBack }) => {
 			const imagepath = 'public/'+authID+'/images/'+name[i];
 			await sbUpload(imagepath, images[i]).then(({error, publicURL}) => {
 				if(error) {
+					setbtnLoading(false);
 					openNotification('error', error.message)
 				}
 				if(publicURL) {
@@ -96,16 +99,19 @@ const Step3 = ({ onNext, onBack }) => {
 		console.log(logo); console.log(favicon);
 		const updateData = {
 			title: steps.title,
-			description: steps.description,
+			description: values.description,
 			username: steps.blog_name,
 			logoimg: logo,
 			faviconimg: favicon, 
 		}
 		await sbProfileUpdate(authID, updateData).then(({ error, data }) => {
 			if(error) {
+				setbtnLoading(false);
 				openNotification('error', error.message)
 			}
 			if(data) {
+				setbtnLoading(false);
+				dispatch(updateAuthorData(updateData))
 				window.location.reload();
 			}
 		})
