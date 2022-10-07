@@ -1,6 +1,7 @@
 import React from 'react'
 import authRoute from './authRoute'
 import pagesRoute from './pagesRoute'
+import appsRoute from './appsRoute'
 
 export const publicRoutes = [
     ...authRoute
@@ -50,5 +51,6 @@ export const protectedRoutes = [
         component: React.lazy(() => import('views/demo/GroupCollapseMenuItemView2')),
         authority: [],
     },
-    ...pagesRoute
+    ...pagesRoute,
+    ...appsRoute
 ]

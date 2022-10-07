@@ -41,4 +41,11 @@ export async function sbUpload(imagepath, image) {
     }
 }
 
+
+export async function sbProfileUpdate(authId, updateData) {
+    const { data, error } = await supabaseClient.from('authors').update(updateData).eq('id', authId);
+      
+    return { error, data };
+}
+
 export default ApiService
