@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, FormItem, FormContainer, Select, Input } from 'components/ui'
+import { Button, FormItem, FormContainer, Select, InputGroup, Input } from 'components/ui'
 import { Field, Form, Formik, ErrorMessage } from 'formik'
 import { HiArrowSmLeft } from 'react-icons/hi'
 import * as Yup from 'yup'
@@ -24,6 +24,17 @@ const sizes = [
 	{label: '51 ~ 200 members', value: '51~200'},
 	{label: '201 ~ 500 members', value: '201~500'}
 ]
+
+const { Addon } = InputGroup 
+
+export const BlogNameInp = ({values}) => {
+	return (
+		<InputGroup className="mb-4">
+			<Input value={values.blogName} />
+			<Addon>.inkflow.com</Addon>
+		</InputGroup>
+	)
+}
 
 const Step2 = ({ onNext, onBack }) => {
 
@@ -59,8 +70,12 @@ const Step2 = ({ onNext, onBack }) => {
 											type="text" 
 											autoComplete="off" 
 											name="blogName" 
-											placeholder="Blog name..." 
-											component={Input} 
+											render={({ field /* { name, value, onChange, onBlur } */ }) => (
+												<InputGroup className="mb-4">
+													<Input {...field} />
+													<Addon>.inkflow.com</Addon>
+												</InputGroup>
+											)}
 										/>
 										<ErrorMessage name="blogName"  render={msg => <div className='text-red-500 text-left'>{msg}</div>} />
 									</FormItem>

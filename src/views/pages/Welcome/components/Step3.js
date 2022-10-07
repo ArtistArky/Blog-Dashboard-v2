@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react'
-import { FormItem, FormContainer, Segment, Button, Input } from 'components/ui'
+import React, { useEffect, useState } from 'react'
+import { FormItem, FormContainer, Segment, Button, Input, Avatar, Upload, Notification, toast } from 'components/ui'
 import { Field, Form, Formik, ErrorMessage } from 'formik'
 import { SegmentItemOption } from 'components/shared'
 import { 
@@ -9,12 +9,12 @@ import {
 	HiOutlineShieldCheck,
 	HiOutlineAcademicCap,
 	HiOutlineSparkles,
-	HiArrowSmLeft
+	HiArrowSmLeft,
+	HiOutlinePlus
 } from 'react-icons/hi'
 import { useDispatch, useSelector } from 'react-redux'
 import * as Yup from 'yup'
-import { Upload } from 'components/ui'
-import { sbUpload } from 'services/ApiService'
+import { sbUpload, sbProfileUpdate } from 'services/ApiService'
 import { stepTwo } from 'store/onboard/onboardSlice'
 
 const roles = [
@@ -37,22 +37,81 @@ const Step3 = ({ onNext, onBack }) => {
     const dispatch = useDispatch()
 
 	const steps =  useSelector((state) => state.onboard)
+	const authID = useSelector((state) => state.auth.user.id)
+
+	const stepsLogo = steps.logoimg ? URL.createObjectURL(steps.logoimg) : null;
+	const stepsFavicon = steps.faviconimg ? URL.createObjectURL(steps.faviconimg) : null;
+
+	const [logoImgURL, setlogoImgURL] = useState(stepsLogo)
+	const [faviconImgURL, setfaviconImgURL] = useState(stepsFavicon)
+
+	const [btnLoading, setbtnLoading] = useState(false);
 
 	useEffect(() => {
-		console.log(steps);
+		// if(steps.logoimg == null){
+		// 	console.log('test')
+		// }
+		//console.log(Object.values(steps.logoimg))
+		//console.log(URL.createObjectURL(steps.logoimg))
+		console.log(steps)
 	}, [])
-	
+
+	const openNotification = (type, text) => {
+		toast.push(
+			<Notification type={type}>
+				{text}
+			</Notification>
+		)
+	}
 
 	const onSetFieldValue = (form, field, val) => {
 		form.setFieldValue(field.name, val[0])
 		onNext?.()
 	}
 
-    const submitOnboard = (values) => {
+    const submitOnboard = async (values) => {
 		dispatch(stepTwo(values))
+
+		const name = ['logo.jpeg', 'favicon.jpeg']
+		const images = [values.logoimg, values.faviconimg]
+        //const imagepath = 'public/'+authId+'/images/'+name[i];
+		console.log(authID)
+		var logo, favicon;
+
+		openNotification('info', 'Uploading images....')
+		for(var i = 0; i < images.length; i++) {
+			const imagepath = 'public/'+authID+'/images/'+name[i];
+			await sbUpload(imagepath, images[i]).then(({error, publicURL}) => {
+				if(error) {
+					openNotification('error', error.message)
+				}
+				if(publicURL) {
+				  console.log(publicURL);
+				  const mainurl = publicURL + '?' + new Date().getTime();
+				  (name[i] == 'logo.jpeg') ? logo = mainurl : favicon = mainurl;
+				}
+			})
+		}
+		openNotification('info', 'Images uploaded. Saving the details....')
+		console.log(logo); console.log(favicon);
+		const updateData = {
+			title: steps.title,
+			description: steps.description,
+			username: steps.blog_name,
+			logoimg: logo,
+			faviconimg: favicon, 
+		}
+		await sbProfileUpdate(authID, updateData).then(({ error, data }) => {
+			if(error) {
+				openNotification('error', error.message)
+			}
+			if(data) {
+				window.location.reload();
+			}
+		})
 	}
 
-	const beforeUpload = (file, fileList, type) => {
+	const beforeUpload = (file, fileList) => {
 		var valid = true;
 
 		console.log(file)
@@ -72,7 +131,7 @@ const Step3 = ({ onNext, onBack }) => {
 			return'Upload image cannot more then 150kb!'
 		}
 		
-		// if(type === 'f') {
+		// if(type === 'f') { 
 		// 	const img = new Image();
 		// 	img.src = URL.createObjectURL(file[0])
 
@@ -95,8 +154,8 @@ const Step3 = ({ onNext, onBack }) => {
 				<Formik
 					initialValues={{
 						description: steps.description,
-						logoimg: steps.logoimg,
-						faviconimg: steps.faviconimg,
+						logoimg: steps.logoimg ? steps.logoimg : '',
+						faviconimg: steps.faviconimg ? steps.faviconimg : '',
 					}}
 					validationSchema={validationSchema}
 					onSubmit={(values) => submitOnboard(values)}
@@ -118,50 +177,90 @@ const Step3 = ({ onNext, onBack }) => {
 										/>
 										<ErrorMessage name="description"  render={msg => <div className='text-red-500 text-left'>{msg}</div>} />
 									</FormItem>
-									<FormItem
-										label="Blog Logo"
-										invalid={errors.logoimg && touched.logoimg}
-									>
-										<Field name="logoimg">
-											{({ form, field }) => ( 							
-												<Upload beforeUpload={(file, fileList) => beforeUpload(file, fileList, 'l')} draggable accept=".jpg,.jpeg,.png"
-													onChange={(file) => {
-														const fileName = 'logo.jpeg'
-														const filetype = 'image/jpeg'
-														//const convertedBlobFile = new File([file], fileName, { type: filetype, lastModified: Date.now()})
-														//console.log(convertedBlobFile)
-														form.setFieldValue(field.name, file[0])
+									<div>
+										<FormItem
+											label="Blog Logo"
+											invalid={errors.logoimg && touched.logoimg}
+										>
+											<Field name="logoimg">
+												{({ form, field }) => ( 	
+												<Upload 
+													className="cursor-pointer" 
+													showList={true}
+													accept=".jpg,.jpeg,.png"
+													beforeUpload={(file, fileList) => beforeUpload(file, fileList)}
+													onFileRemove={() => setlogoImgURL()}
+													onChange={(file)=> {
+														const url = URL.createObjectURL(file[0])
+														const fileName = 'logo.png'
+														const filetype = 'image/png'
+														const convertedBlobFile = new File([file[0]], fileName, { type: filetype, lastModified: Date.now()})
+														// console.log(convertedBlobFile)
+														form.setFieldValue(field.name, convertedBlobFile)
+														setlogoImgURL(url)
 														console.log(values)
 													}} 
-													fileList={[steps.logoimg]}
-												/>
-											)}
-										</Field>
-										<ErrorMessage name="logoimg" render={msg => <div className='text-red-500 text-left'>{msg}</div>} />
-									</FormItem>
-									<FormItem
-										label="Blog Favicon"
-										invalid={errors.faviconimg && touched.faviconimg}
-									>
-										<Field name="faviconimg">
-											{({ form, field }) => ( 							
-												<Upload beforeUpload={(file, fileList) => beforeUpload(file, fileList, 'f')} draggable accept=".jpg,.jpeg,.png"
-													onChange={(file) => {
+												>
+													<Avatar size={80} src={logoImgURL} icon={<HiOutlinePlus />} />
+												</Upload>						
+													// <Upload beforeUpload={(file, fileList) => beforeUpload(file, fileList, 'l')} draggable accept=".jpg,.jpeg,.png"
+													// 	onChange={(file) => {
+													// 		const fileName = 'logo.jpeg'
+													// 		const filetype = 'image/jpeg'
+													// 		//const convertedBlobFile = new File([file], fileName, { type: filetype, lastModified: Date.now()})
+													// 		//console.log(convertedBlobFile)
+													// 		form.setFieldValue(field.name, file[0])
+													// 		console.log(values)
+													// 	}} 
+													// 	fileList={[steps.logoimg]}
+													// />
+												)}
+											</Field>
+											<ErrorMessage name="logoimg" render={msg => <div className='text-red-500 text-left'>{msg}</div>} />
+										</FormItem>
+										<FormItem
+											label="Blog Favicon"
+											invalid={errors.faviconimg && touched.faviconimg}
+										>
+											<Field name="faviconimg">
+												{({ form, field }) => ( 	
+												<Upload 
+													className="cursor-pointer" 
+													showList={true}
+													accept=".jpg,.jpeg,.png"
+													beforeUpload={(file, fileList) => beforeUpload(file, fileList)}
+													onFileRemove={() => setfaviconImgURL()}
+													onChange={(file)=> {
+														const url = URL.createObjectURL(file[0])
 														const fileName = 'favicon.jpeg'
 														const filetype = 'image/jpeg'
-														//const convertedBlobFile = new File([file], fileName, { type: filetype, lastModified: Date.now()})
-														//console.log(convertedBlobFile)
-														form.setFieldValue(field.name, file[0])
+														const convertedBlobFile = new File([file[0]], fileName, { type: filetype, lastModified: Date.now()})
+														// console.log(convertedBlobFile)
+														form.setFieldValue(field.name, convertedBlobFile)
+														setfaviconImgURL(url)
 														console.log(values)
 													}} 
-													fileList={[steps.faviconimg]}
-												/>
-											)}
-										</Field>
-										<ErrorMessage name="faviconimg" render={msg => <div className='text-red-500 text-left'>{msg}</div>} />
-									</FormItem>
+												>
+													<Avatar size={80} src={faviconImgURL} icon={<HiOutlinePlus />} />
+												</Upload>							
+													// <Upload beforeUpload={(file, fileList) => beforeUpload(file, fileList, 'f')} draggable accept=".jpg,.jpeg,.png"
+													// 	onChange={(file) => {
+													// 		const fileName = 'favicon.jpeg'
+													// 		const filetype = 'image/jpeg'
+													// 		//const convertedBlobFile = new File([file], fileName, { type: filetype, lastModified: Date.now()})
+													// 		//console.log(convertedBlobFile)
+													// 		form.setFieldValue(field.name, file[0])
+													// 		console.log(values)
+													// 	}} 
+													// 	fileList={[steps.faviconimg]}
+													// />
+												)}
+											</Field>
+											<ErrorMessage name="faviconimg" render={msg => <div className='text-red-500 text-left'>{msg}</div>} />
+										</FormItem>
+									</div>
 									<FormItem>
-										<Button block variant="solid" type="submit">Submit</Button>
+										<Button block variant="solid" type="submit" loading={btnLoading}>Submit</Button>
 										<Button
 											className="mt-4"
 											variant="plain" 
