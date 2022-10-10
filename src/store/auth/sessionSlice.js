@@ -4,12 +4,14 @@ export const sessionSlice = createSlice({
 	name: 'auth/session',
 	initialState: {
         token: '',
+        providerToken: '',
         signedIn: false,
     },
 	reducers: {
         onSignInSuccess: (state, action) => {
             state.signedIn = true
-            state.token = action.payload
+            state.token = action.payload.access_token
+            state.providerToken = action.payload.provider_token
         },
         onSignOutSuccess: (state) => {
             state.signedIn = false
