@@ -60,8 +60,11 @@ const SignInForm = props => {
 				console.log(res.user);
 			}else {
 				console.log(res.user);
-				const { access_token } = res.session
-				dispatch(onSignInSuccess(access_token))
+				const { access_token, provider_token } = res.session
+				dispatch(onSignInSuccess({
+					access_token, 
+					provider_token
+				}))
 				if(res.user) {
 					const userData = {
 						id: res.user.id,

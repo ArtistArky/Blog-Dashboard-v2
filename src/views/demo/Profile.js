@@ -131,10 +131,10 @@ const Profile = ({data}) => {
             openNotification('info', 'Uploading images....')
             for(var i = 0; i < images.length; i++) {
                 const imagepath = 'public/'+authID+'/images/'+name[i];
-                await sbUpload(imagepath, images[i]).then(({error, publicURL}) => {
+                await sbUpload('authors', imagepath, images[i]).then(({error, publicURL}) => {
                     if(error) {
                         setbtnLoading(false);
-                        openNotification('error', error.message)
+                        openNotification('danger', error.message)
                     }
                     if(publicURL) {
                       console.log(publicURL);
@@ -156,7 +156,7 @@ const Profile = ({data}) => {
 		await sbProfileUpdate(authID, updateData).then(({ error, data }) => {
 			if(error) {
 				setbtnLoading(false);
-				openNotification('error', error.message)
+				openNotification('danger', error.message)
 			}
 			if(data) {
 				setbtnLoading(false);

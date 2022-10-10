@@ -5,11 +5,14 @@ import UserDropdown from 'components/template/UserDropdown'
 import SideNavToggle from 'components/template/SideNavToggle'
 import MobileNav from 'components/template/MobileNav'
 import SideNav from 'components/template/SideNav'
+import { Button } from 'components/ui'
 import View from 'views'
 import { sbAuthor } from 'services/ApiService'
 import { Error } from 'components/ui'
 import { initialState, setAuthorData, updateOnboard } from 'store/userData/authorSlice'
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import supabaseClient from 'utils/supabaseClient'
 
 const HeaderActionsStart = () => {
 	return (
@@ -21,8 +24,15 @@ const HeaderActionsStart = () => {
 }
 
 const HeaderActionsEnd = () => {
+    const navigate = useNavigate()
+
 	return (
 		<>
+			<div className="mr-3">
+				<Button onClick={() => navigate('/app/create-post')} size="sm" variant="solid" type="submit">
+					<b className='text-20'>+</b>&nbsp;&nbsp;Create
+				</Button>
+			</div>	
 			<SidePanel />
 			<UserDropdown hoverable={false} />
 		</>
@@ -40,7 +50,8 @@ const ModernLayout = props => {
 	const authID = useSelector((state) => state.auth.user.id)
 
 	const checkAuthor = async () => {
-		console.log(author);
+		var user = await supabaseClient.auth.session();
+		console.log(user);
 		if(author === initialState) {
 			fetchAuthorData();
 		}else if(author.username === null) {

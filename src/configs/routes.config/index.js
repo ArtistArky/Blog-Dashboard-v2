@@ -56,6 +56,12 @@ export const protectedRoutes = [
         path: `${APP_PREFIX_PATH}/account/settings/profile`,
         component: React.lazy(() => import('views/demo/Profile')),
         authority: [],
+    },,
+    {
+        key: 'apps.createpost',
+        path: `${APP_PREFIX_PATH}/create-post`,
+        component: React.lazy(() => import('views/demo/CreatePost')),
+        authority: [],
     },
     ...pagesRoute,
 ]
