@@ -14,7 +14,7 @@ import {
 } from 'react-icons/hi'
 import { useDispatch, useSelector } from 'react-redux'
 import * as Yup from 'yup'
-import { sbUpload, sbProfileUpdate } from 'services/ApiService'
+import { sbUpload, sbUpdate } from 'services/ApiService'
 import { stepTwo } from 'store/onboard/onboardSlice'
 import { updateAuthorData } from 'store/userData/authorSlice'
 
@@ -104,7 +104,7 @@ const Step3 = ({ onNext, onBack }) => {
 			logoimg: logo,
 			faviconimg: favicon, 
 		}
-		await sbProfileUpdate(authID, updateData).then(({ error, data }) => {
+		await sbUpdate('authors', authID, updateData, 'id').then(({ error, data }) => {
 			if(error) {
 				setbtnLoading(false);
 				openNotification('error', error.message)

@@ -1,5 +1,5 @@
 import BaseService from './BaseService'
-import supabaseClient from 'utils/supabaseClient';
+import supabaseClient from 'utils/supabaseClient'
 
 const ApiService = {
     fetchData(param) {
@@ -41,8 +41,8 @@ export async function sbUpload(bucket, imagepath, image) {
     }
 }
 
-export async function sbProfileUpdate(authId, updateData) {
-    const { data, error } = await supabaseClient.from('authors').update(updateData).eq('id', authId);
+export async function sbUpdate(table, authId, updateData, type) {
+    const { data, error } = await supabaseClient.from(table).update(updateData).eq(type, authId);
       
     return { error, data };
 }
@@ -58,9 +58,47 @@ export async function checkDetails(user, type, query, table) {
     else return data;
 }
 
-export async function postInsert(insertData) {
-    const { data, error } = await supabaseClient.from('posts').insert(insertData, { upsert: true });
+export async function sbInsert(table, insertData) {
+    const { data, error } = await supabaseClient.from(table).insert(insertData, { upsert: true });
       
+    return { error, data };
+}
+
+export async function sbSelect(table, content, type, authId, inPage, fnPage) {
+    const { data,error } = await supabaseClient
+        .from(table)
+        .select(content)
+        .eq(type, authId)
+        .range(inPage, fnPage)
+        .order('created_at', { ascending: false })
+ 
+    return { error, data };
+}
+
+export async function sbSelectDefault(table, content, type, authId) {
+    const { data,error } = await supabaseClient
+        .from(table)
+        .select(content)
+        .eq(type, authId)
+ 
+    return { error, data };
+}
+
+export async function sbStorageDelete(bucket, deleteData) {
+    const { data, error } = await supabaseClient.storage
+		.from(bucket)
+		.remove(deleteData)
+
+    return { error, data };
+}
+
+export async function sbUserDataDelete(table, type, authId, type2, authId2) {
+    const { data, error } = await supabaseClient
+        .from(table)
+        .delete()
+        .eq(type, authId)
+        .eq(type2, authId2)
+
     return { error, data };
 }
 

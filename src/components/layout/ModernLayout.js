@@ -10,6 +10,8 @@ import View from 'views'
 import { sbAuthor } from 'services/ApiService'
 import { Error } from 'components/ui'
 import { initialState, setAuthorData, updateOnboard } from 'store/userData/authorSlice'
+import { setEmpty } from 'store/userData/postSlice'
+import { setEmptyC } from 'store/userData/categorySlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import supabaseClient from 'utils/supabaseClient'
@@ -77,11 +79,19 @@ const ModernLayout = props => {
 	}
 
 	useEffect(() => {
+		window.onbeforeunload = function () {
+			console.log("In onbeforeunload")
+			dispatch(setEmpty())
+			dispatch(setEmptyC())
+		}
+	}, [])
+
+	useEffect(() => {
 		checkAuthor();
 	}, [])
 	
 
-	if(error == true) {
+	if(error === true) {
 
 		return (
 			<Error />
@@ -95,7 +105,7 @@ const ModernLayout = props => {
 					{
 						onboardStatus === true && <SideNav />
 					}
-					<div className="flex flex-col flex-auto min-h-screen min-w-0 relative w-full bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700">
+					<div className="flex flex-col flex-auto min-h-screen min-w-0 relative w-full dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700">
 						<Header 
 							className="border-b border-gray-200 dark:border-gray-700" 
 							headerEnd={<HeaderActionsEnd />} 

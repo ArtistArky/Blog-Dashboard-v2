@@ -29,12 +29,18 @@ export const authorSlice = createSlice({
             state.logoimg = action.payload.logoimg
             state.faviconimg = action.payload.faviconimg
         },
+        updateAuthorPosts: (state, action) => {
+            state.posts = action.payload
+        },
+        updateAuthorCategory: (state, action) => {
+            state.category = action.payload
+        },
         updateOnboard: (state, action) => {
             state.onboard = action.payload
         },
 	},
 })
 
-export const { setAuthorData, updateAuthorData, updateOnboard } = authorSlice.actions
+export const { setAuthorData, updateAuthorData, updateAuthorPosts, updateAuthorCategory, updateOnboard } = authorSlice.actions
 
 export default authorSlice.reducer
