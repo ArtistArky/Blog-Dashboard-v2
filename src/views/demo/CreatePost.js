@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { 
     InputGroup, 
 	Input, 
@@ -8,8 +8,10 @@ import {
 	Select,
 	Notification, 
 	toast,
-	FormContainer 
+	FormContainer,
+	Error
 } from 'components/ui'
+import { Loading } from 'components/shared'
 import FormDesription from './FormDesription'
 import FormRow from './FormRow'
 import { Field, Form, Formik } from 'formik'
@@ -19,12 +21,14 @@ import {
     HiOutlinePlus,
 } from 'react-icons/hi'
 import * as Yup from 'yup'
-import { checkDetails, sbUpload, postInsert } from 'services/ApiService'
+import { checkDetails, sbUpload, sbInsert, sbSelectDefault } from 'services/ApiService'
 import useDrivePicker from 'react-google-drive-picker'
 import Compress from "browser-image-compression"
 import axios from "axios"
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
+import { setPostsData } from 'store/userData/postSlice'
+import { setEmptyC } from 'store/userData/categorySlice'
 
 const { Addon } = InputGroup 
 
@@ -37,7 +41,6 @@ const validationSchema = Yup.object().shape({
 	featuredImg: Yup.string().required('Featured Image is required'),
 })
 
-
 var fihd, fisd;
 
 const colourOptions = [
@@ -47,15 +50,19 @@ const colourOptions = [
 ]
 
 const CreatePost = ({data}) => {
+
+	const dispatch = useDispatch()
     
     const navigate = useNavigate()
 
-	const [openPicker, authResponse] = useDrivePicker(); 
+	const [openPicker, authResponse] = useDrivePicker()
 
+	const userPosts = useSelector((state) => state.userData.posts)
 	const { username } = useSelector((state) => state.userData.author)
 	const authID = useSelector((state) => state.auth.user.id)
 	const provider = useSelector((state) => state.auth.session.providerToken)
 
+	const [categoryList, setcategoryList] = useState();
 	const [postTitle, setpostTitle] = useState("")
 	const [docs, setDocs] = useState()
 	const [docsName, setdocsName] = useState("Select your Google Docs from your Google Account")
@@ -63,8 +70,33 @@ const CreatePost = ({data}) => {
 	const [fihighRes, setfihighRes] = useState()
 	const [filowRes, setfilowRes] = useState()
 
+	const [error, setError] = useState(false)
+	const [loading, setLoading] = useState(false)
 	const [btnLoading, setbtnLoading] = useState(false)
-	const [btnDisabled, setbtnDisabled] = useState(false);
+	const [btnDisabled, setbtnDisabled] = useState(false)
+  
+	const fetchCatList = async() => {
+		setLoading(true)
+
+		await sbSelectDefault('category', 'id, title, name', 'createdby', authID).then(({ error, data }) => {
+
+		  if(error) {
+			  throw setError(true)
+		  }
+			
+		  if(data) {
+			  var catList = []
+			  data.map((item) => {
+				catList.push({ value: item.id, label: item.name })
+			  });
+			  console.log(catList)
+			  setcategoryList(catList)
+			  setLoading(false)
+		  }
+
+		})
+
+	}
 
 	const openNotification = (type, text) => {
 		toast.push(
@@ -223,15 +255,21 @@ const CreatePost = ({data}) => {
 					  { posttitle: postTitle, title: title, category: category, post: response.data, featured_imghd: fihd, featured_imgsd: fisd, postedby: authID, docsid: docs, href: postUrl },
 					]
 
-					await postInsert(insertData).then(({ error, data }) => {
-						if(error) {
-							setBtn(false)
-							openNotification('danger', error.message)
-						}
+					await sbInsert('posts', insertData).then(async ({ data }) => {
 						if(data) {
-							setBtn(false)
-							openNotification('success', 'Post Created successfully....')
-							navigate('/home')
+
+							openNotification('success', 'Post Created successfully. Please wait....')
+							
+							await sbSelectDefault('posts', '*, authors!inner(*), category!inner(*)', 'posttitle', postTitle).then(({ data }) => {
+								if(data) {
+									const postData = [...data, ...userPosts]
+									console.log(postData)
+									dispatch(setPostsData(postData)) 
+									dispatch(setEmptyC()) 
+									setBtn(false)
+									navigate('/posts')
+								}
+							})
 						}
 					})
 
@@ -249,91 +287,93 @@ const CreatePost = ({data}) => {
 
 	return (
 		<>
-		<FormDesription 
-			title="Create New Post"
-			desc=""
-		/>
-		<div className='grid grid-flow-row-dense md:grid-cols-2 gap-4 mt-10 mb-10 cursor-pointer' >
-			<div>
-				<p className='font-semibold'>Google Docs</p>
-			</div>
-			<div onClick={createPicker} className="col-span-2 mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-neutral-300 dark:border-neutral-700 border-dashed rounded-md">
-				<div className="space-y-1 text-center">
-				<img className="mx-auto h-12 w-12 text-neutral-400" alt="svgImg" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHg9IjBweCIgeT0iMHB4Igp3aWR0aD0iMjUiIGhlaWdodD0iMjUiCnZpZXdCb3g9IjAgMCAxNzIgMTcyIgpzdHlsZT0iIGZpbGw6IzAwMDAwMDsiPjxnIHRyYW5zZm9ybT0iIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9Im5vbnplcm8iIHN0cm9rZT0ibm9uZSIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtbGluZWNhcD0iYnV0dCIgc3Ryb2tlLWxpbmVqb2luPSJtaXRlciIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIiBzdHJva2UtZGFzaGFycmF5PSIiIHN0cm9rZS1kYXNob2Zmc2V0PSIwIiBmb250LWZhbWlseT0ibm9uZSIgZm9udC13ZWlnaHQ9Im5vbmUiIGZvbnQtc2l6ZT0ibm9uZSIgdGV4dC1hbmNob3I9Im5vbmUiIHN0eWxlPSJtaXgtYmxlbmQtbW9kZTogbm9ybWFsIj48cGF0aCBkPSJNMCwxNzJ2LTE3MmgxNzJ2MTcyeiIgZmlsbD0ibm9uZSI+PC9wYXRoPjxwYXRoIGQ9IiIgZmlsbD0ibm9uZSI+PC9wYXRoPjxwYXRoIGQ9IiIgZmlsbD0ibm9uZSI+PC9wYXRoPjxnIGZpbGw9IiM3Nzc3NzciPjxwYXRoIGQ9Ik00OC4xNiwyNC4wOGMtNS43MDAwOCwwIC0xMC4zMiw0LjYxOTkyIC0xMC4zMiwxMC4zMnYxMDMuMmMwLDUuNzAwMDggNC42MTk5MiwxMC4zMiAxMC4zMiwxMC4zMmg3NS42OGM1LjcwMDA4LDAgMTAuMzIsLTQuNjE5OTIgMTAuMzIsLTEwLjMydi02MS41MDM0NGMwLC0xLjgyMzIgLTAuNzI1NjMsLTMuNTc0MzggLTIuMDE1NjMsLTQuODY0MzhsLTQ1LjEzNjU2LC00NS4xMzY1NmMtMS4yOSwtMS4yOSAtMy4wNDExOCwtMi4wMTU2MiAtNC44NjQzOCwtMi4wMTU2MnpNNDguMTYsMjcuNTJoMzQuNHYzNy44NGMwLDUuNzAwMDggNC42MTk5MiwxMC4zMiAxMC4zMiwxMC4zMmgzNy44NHY2MS45MmMwLDMuODAxMiAtMy4wNzg4LDYuODggLTYuODgsNi44OGgtNzUuNjhjLTMuODAxMiwwIC02Ljg4LC0zLjA3ODggLTYuODgsLTYuODh2LTEwMy4yYzAsLTMuODAxMiAzLjA3ODgsLTYuODggNi44OCwtNi44OHpNODYsMjkuOTUyMTlsNDIuMjg3ODEsNDIuMjg3ODFoLTM1LjQwNzgxYy0zLjgwMTIsMCAtNi44OCwtMy4wNzg4IC02Ljg4LC02Ljg4ek02MC4yLDk2LjMyYy0wLjk0OTQ0LDAgLTEuNzIsMC43NzA1NiAtMS43MiwxLjcyYzAsMC45NDk0NCAwLjc3MDU2LDEuNzIgMS43MiwxLjcyaDUxLjZjMC45NDk0NCwwIDEuNzIsLTAuNzcwNTYgMS43MiwtMS43MmMwLC0wLjk0OTQ0IC0wLjc3MDU2LC0xLjcyIC0xLjcyLC0xLjcyek02MC4yLDExNi45NmMtMC45NDk0NCwwIC0xLjcyLDAuNzcwNTYgLTEuNzIsMS43MmMwLDAuOTQ5NDQgMC43NzA1NiwxLjcyIDEuNzIsMS43Mmg1MS42YzAuOTQ5NDQsMCAxLjcyLC0wLjc3MDU2IDEuNzIsLTEuNzJjMCwtMC45NDk0NCAtMC43NzA1NiwtMS43MiAtMS43MiwtMS43MnoiPjwvcGF0aD48L2c+PC9nPjwvZz48L3N2Zz4="/>
-					<p className="text-xs text-neutral-500">
-					 {docsName}
-					</p>
+			<FormDesription 
+				title="Create New Post"
+				desc=""
+			/>
+			<div className='grid grid-flow-row-dense md:grid-cols-2 gap-4 mt-10 mb-10 cursor-pointer' >
+				<div>
+					<p className='font-semibold'>Google Docs</p>
+				</div>
+				<div onClick={createPicker} className="col-span-2 mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-neutral-300 dark:border-neutral-700 border-dashed rounded-md">
+					<div className="space-y-1 text-center">
+					<img className="mx-auto h-12 w-12 text-neutral-400" alt="svgImg" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHg9IjBweCIgeT0iMHB4Igp3aWR0aD0iMjUiIGhlaWdodD0iMjUiCnZpZXdCb3g9IjAgMCAxNzIgMTcyIgpzdHlsZT0iIGZpbGw6IzAwMDAwMDsiPjxnIHRyYW5zZm9ybT0iIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9Im5vbnplcm8iIHN0cm9rZT0ibm9uZSIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtbGluZWNhcD0iYnV0dCIgc3Ryb2tlLWxpbmVqb2luPSJtaXRlciIgc3Ryb2tlLW1pdGVybGltaXQ9IjEwIiBzdHJva2UtZGFzaGFycmF5PSIiIHN0cm9rZS1kYXNob2Zmc2V0PSIwIiBmb250LWZhbWlseT0ibm9uZSIgZm9udC13ZWlnaHQ9Im5vbmUiIGZvbnQtc2l6ZT0ibm9uZSIgdGV4dC1hbmNob3I9Im5vbmUiIHN0eWxlPSJtaXgtYmxlbmQtbW9kZTogbm9ybWFsIj48cGF0aCBkPSJNMCwxNzJ2LTE3MmgxNzJ2MTcyeiIgZmlsbD0ibm9uZSI+PC9wYXRoPjxwYXRoIGQ9IiIgZmlsbD0ibm9uZSI+PC9wYXRoPjxwYXRoIGQ9IiIgZmlsbD0ibm9uZSI+PC9wYXRoPjxnIGZpbGw9IiM3Nzc3NzciPjxwYXRoIGQ9Ik00OC4xNiwyNC4wOGMtNS43MDAwOCwwIC0xMC4zMiw0LjYxOTkyIC0xMC4zMiwxMC4zMnYxMDMuMmMwLDUuNzAwMDggNC42MTk5MiwxMC4zMiAxMC4zMiwxMC4zMmg3NS42OGM1LjcwMDA4LDAgMTAuMzIsLTQuNjE5OTIgMTAuMzIsLTEwLjMydi02MS41MDM0NGMwLC0xLjgyMzIgLTAuNzI1NjMsLTMuNTc0MzggLTIuMDE1NjMsLTQuODY0MzhsLTQ1LjEzNjU2LC00NS4xMzY1NmMtMS4yOSwtMS4yOSAtMy4wNDExOCwtMi4wMTU2MiAtNC44NjQzOCwtMi4wMTU2MnpNNDguMTYsMjcuNTJoMzQuNHYzNy44NGMwLDUuNzAwMDggNC42MTk5MiwxMC4zMiAxMC4zMiwxMC4zMmgzNy44NHY2MS45MmMwLDMuODAxMiAtMy4wNzg4LDYuODggLTYuODgsNi44OGgtNzUuNjhjLTMuODAxMiwwIC02Ljg4LC0zLjA3ODggLTYuODgsLTYuODh2LTEwMy4yYzAsLTMuODAxMiAzLjA3ODgsLTYuODggNi44OCwtNi44OHpNODYsMjkuOTUyMTlsNDIuMjg3ODEsNDIuMjg3ODFoLTM1LjQwNzgxYy0zLjgwMTIsMCAtNi44OCwtMy4wNzg4IC02Ljg4LC02Ljg4ek02MC4yLDk2LjMyYy0wLjk0OTQ0LDAgLTEuNzIsMC43NzA1NiAtMS43MiwxLjcyYzAsMC45NDk0NCAwLjc3MDU2LDEuNzIgMS43MiwxLjcyaDUxLjZjMC45NDk0NCwwIDEuNzIsLTAuNzcwNTYgMS43MiwtMS43MmMwLC0wLjk0OTQ0IC0wLjc3MDU2LC0xLjcyIC0xLjcyLC0xLjcyek02MC4yLDExNi45NmMtMC45NDk0NCwwIC0xLjcyLDAuNzcwNTYgLTEuNzIsMS43MmMwLDAuOTQ5NDQgMC43NzA1NiwxLjcyIDEuNzIsMS43Mmg1MS42YzAuOTQ5NDQsMCAxLjcyLC0wLjc3MDU2IDEuNzIsLTEuNzJjMCwtMC45NDk0NCAtMC43NzA1NiwtMS43MiAtMS43MiwtMS43MnoiPjwvcGF0aD48L2c+PC9nPjwvZz48L3N2Zz4="/>
+						<p className="text-xs text-neutral-500">
+						{docsName}
+						</p>
+					</div>
 				</div>
 			</div>
-		</div>
-		{
-			postmetaCon && (
-				<Formik
-					initialValues={{
-						title: postTitle,
-						category: '',
-						featuredImg: '',
-					}}
-					enableReinitialize
-					validationSchema={validationSchema}
-					onSubmit={(values) => createPost(values)}
-				>
-					{({values, touched, errors, isSubmitting, resetForm}) => {
-						const validatorProps = {touched, errors}
-						return (
-							<Form>
-								<FormContainer>
-									
-									<FormRow name="title" label="Post Title" {...validatorProps} border={false} >
-										<Field
-											type="text" 
-											autoComplete="off" 
-											name="title" 
-											placeholder="Title" 
-											component={Input}
-										/>
-									</FormRow>
-									<FormRow name="category" label="Category" {...validatorProps} >
-										<Field name="category">
-											{({ field, form }) => (
-											<Select
-												options={colourOptions}
-												placeholder="Select"
-												onChange={option => form.setFieldValue(field.name, option.value)}
+			{
+				postmetaCon && (
+					<Formik
+						initialValues={{
+							title: postTitle,
+							category: '',
+							featuredImg: '',
+						}}
+						enableReinitialize
+						validationSchema={validationSchema}
+						onSubmit={(values) => createPost(values)}
+					>
+						{({values, touched, errors, isSubmitting, resetForm}) => {
+							const validatorProps = {touched, errors}
+							return (
+								<Form>
+									<FormContainer>
+										
+										<FormRow name="title" label="Post Title" {...validatorProps} border={false} >
+											<Field
+												type="text" 
+												autoComplete="off" 
+												name="title" 
+												placeholder="Title" 
+												component={Input}
 											/>
-											)}
-										</Field>
-									</FormRow>
-									<FormRow name="featuredImg" label="Featured Image" {...validatorProps} >
-										<Field name="featuredImg">
-											{({ form, field }) => ( 	
-											<Upload 
-												className="cursor-pointer" 
-												showList={true}
-												draggable
-												accept=".jpg,.jpeg,.png"
-												beforeUpload={(file, fileList) => beforeUpload(file, fileList)}
-												onFileRemove={() => {
-													form.setFieldValue(field.name, '')
-												}}
-												onChange={async (file)=> await getFile(file, form, field)} 
-											>
-											</Upload>
-											)}
-										</Field>
-									</FormRow>
-									<div className="mt-4 ltr:text-right">
-										<Button disabled={btnDisabled} variant="solid" loading={btnLoading} type="submit">
-											Save
-										</Button>
-									</div>
-								</FormContainer>
-							</Form>
-						)
-					}}
-				</Formik>
-			)
-		}
+										</FormRow>
+										<FormRow name="category" label="Category" {...validatorProps} >
+											<Field name="category">
+												{({ field, form }) => (
+												<Select
+													options={categoryList}
+													placeholder="Select"
+													onFocus={fetchCatList}
+													isLoading={loading}
+													onChange={option => form.setFieldValue(field.name, option.value)}
+												/>
+												)}
+											</Field>
+										</FormRow>
+										<FormRow name="featuredImg" label="Featured Image" {...validatorProps} >
+											<Field name="featuredImg">
+												{({ form, field }) => ( 	
+												<Upload 
+													className="cursor-pointer" 
+													showList={true}
+													draggable
+													accept=".jpg,.jpeg,.png"
+													beforeUpload={(file, fileList) => beforeUpload(file, fileList)}
+													onFileRemove={() => {
+														form.setFieldValue(field.name, '')
+													}}
+													onChange={async (file)=> await getFile(file, form, field)} 
+												>
+												</Upload>
+												)}
+											</Field>
+										</FormRow>
+										<div className="mt-4 ltr:text-right">
+											<Button disabled={btnDisabled} variant="solid" loading={btnLoading} type="submit">
+												Save
+											</Button>
+										</div>
+									</FormContainer>
+								</Form>
+							)
+						}}
+					</Formik>
+				)
+			}
 		</>
 	)
 }

@@ -17,11 +17,21 @@ const navigationConfig = [
     },
     /** Example purpose only */
     {
-        key: 'singleMenuItem',
-		path: '/single-menu-view',
-		title: 'Single menu item',
-		translateKey: 'nav.singleMenuItem',
-		icon: 'singleMenu',
+        key: 'posts',
+		path: '/posts',
+		title: 'Posts',
+		translateKey: 'nav.posts',
+		icon: 'posts',
+		type: NAV_ITEM_TYPE_ITEM,
+		authority: [],
+        subMenu: []
+    },
+    {
+        key: 'category',
+		path: '/category',
+		title: 'Category',
+		translateKey: 'nav.category',
+		icon: 'category',
 		type: NAV_ITEM_TYPE_ITEM,
 		authority: [],
         subMenu: []

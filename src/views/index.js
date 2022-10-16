@@ -54,7 +54,7 @@ const AllRoutes = props => {
 								{...route.meta} 
 							/>
 						}
-					/ >
+					/>
 				))}
 			</Route>
 		</Routes>

@@ -16,9 +16,15 @@ export const protectedRoutes = [
     },
     /** Example purpose only */
     {
-        key: 'singleMenuItem',
-        path: '/single-menu-view',
-        component: React.lazy(() => import('views/demo/SingleMenuView')),
+        key: 'posts',
+        path: '/posts',
+        component: React.lazy(() => import('views/demo/Posts')),
+        authority: [],
+    },
+    {
+        key: 'category',
+        path: '/category',
+        component: React.lazy(() => import('views/demo/Category')),
         authority: [],
     },
     {
@@ -56,7 +62,7 @@ export const protectedRoutes = [
         path: `${APP_PREFIX_PATH}/account/settings/profile`,
         component: React.lazy(() => import('views/demo/Profile')),
         authority: [],
-    },,
+    },
     {
         key: 'apps.createpost',
         path: `${APP_PREFIX_PATH}/create-post`,

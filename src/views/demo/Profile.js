@@ -19,7 +19,7 @@ import {
 } from 'react-icons/hi'
 import * as Yup from 'yup'
 import { useDispatch, useSelector } from 'react-redux'
-import { sbUpload, sbProfileUpdate } from 'services/ApiService'
+import { sbUpload, sbUpdate } from 'services/ApiService'
 import { updateAuthorData } from 'store/userData/authorSlice'
 
 const { Addon } = InputGroup 
@@ -153,7 +153,7 @@ const Profile = ({data}) => {
 			logoimg: logo,
 			faviconimg: favicon, 
 		}
-		await sbProfileUpdate(authID, updateData).then(({ error, data }) => {
+		await sbUpdate('authors', authID, updateData, 'id').then(({ error, data }) => {
 			if(error) {
 				setbtnLoading(false);
 				openNotification('danger', error.message)
