@@ -38,9 +38,10 @@ export const authorSlice = createSlice({
         updateOnboard: (state, action) => {
             state.onboard = action.payload
         },
+        setEmptyA: () => initialState,
 	},
 })
 
-export const { setAuthorData, updateAuthorData, updateAuthorPosts, updateAuthorCategory, updateOnboard } = authorSlice.actions
+export const { setAuthorData, updateAuthorData, updateAuthorPosts, updateAuthorCategory, updateOnboard, setEmptyA } = authorSlice.actions
 
 export default authorSlice.reducer

@@ -4,17 +4,18 @@ import { Loading, TextEllipsis, UsersAvatarGroup } from 'components/shared'
 //import Confirmations  from './Confirmations'
 import { updateAuthorPosts } from 'store/userData/authorSlice'
 import { setPostsData, setEmpty, deletePostData } from 'store/userData/postSlice'
+import { setEmptyC } from 'store/userData/categorySlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { sbSelect, sbUpdate, sbStorageDelete, sbUserDataDelete } from 'services/ApiService'
 import axios from "axios"
 import { HiOutlinePlus } from 'react-icons/hi'
 import { GrTrash, GrSync } from 'react-icons/gr'
-import supabaseClient from 'utils/supabaseClient'
+import { PostContext, useGlobalContext } from "utils/context/postContext"
 
 const openNotification = (type, text) => {
 	toast.push(
-		<Notification closable duration={0} type={type}>
+		<Notification type={type}>
 			{text}
 		</Notification>
 	)
@@ -25,6 +26,8 @@ const maxPosts = 2
 var inPage = 0, fnPage = maxPosts, postData = []
 
 const PostSection = ({data}) => {
+
+	const { setPosts } = useGlobalContext()
 
 	const dispatch = useDispatch()
 
@@ -92,7 +95,9 @@ const PostSection = ({data}) => {
 				  editedPostdata.splice(findIndex, 1)
 				  postData = editedPostdata
 				  console.log(postData)
+				  setPosts(postData)
 				  postData.length === 0 ? dispatch(setEmpty()) : dispatch(deletePostData(data[0]))
+				  dispatch(setEmptyC())
 				  inPage = postData.length; fnPage = postData.length + maxPosts;
 				  openNotification('success', 'Delete Complete')
 				  console.log(inPage)
@@ -173,6 +178,8 @@ const Articles = () => {
 	const authID = useSelector((state) => state.auth.user.id)
 	const authorPosts = useSelector((state) => state.userData.author.posts)
 
+	const [posts, setPosts] = useState() 
+
 	const [error, setError] = useState(false)
 	const [loading, setLoading] = useState(true)
 	const [btnLoading, setbtnLoading] = useState(false)
@@ -181,7 +188,8 @@ const Articles = () => {
 		console.log("userPosts", userPosts)
 		console.log("authorPosts", authorPosts)
 		//dispatch(setEmpty())
-		if(userPosts.length === 0 && inPage == 0) {
+		if(userPosts.length === 0) {
+			inPage = 0; fnPage = maxPosts;
 			fetchPosts()
 		}else {
 			setLoading(true)
@@ -190,6 +198,7 @@ const Articles = () => {
 			console.log(inPage)
 			console.log(fnPage)
 			postData = userPosts
+			setPosts(postData)
 			console.log(postData)
 			setLoading(false)
 		}
@@ -208,6 +217,7 @@ const Articles = () => {
 				setLoading(false)
 			}else if(data) {
 				postData = inPage === 0 ? [...data] : [...postData, ...data]
+				setPosts(postData)
 				dispatch(setPostsData(postData)) 
 				dispatch(updateAuthorPosts(data[0].authors.posts)) 
 				inPage = postData.length; fnPage = postData.length + maxPosts;
@@ -232,7 +242,9 @@ const Articles = () => {
 
 		return (
 			<Loading loading={loading}>
-				<PostSection data={postData} />
+				<PostContext.Provider value={{ posts, setPosts }}>
+					<PostSection data={posts} />
+				</PostContext.Provider>
 				{
 					authorPosts > maxPosts && (
 						<div className="flex items-center justify-center mt-4">

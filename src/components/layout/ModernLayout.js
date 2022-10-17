@@ -12,6 +12,7 @@ import { Error } from 'components/ui'
 import { initialState, setAuthorData, updateOnboard } from 'store/userData/authorSlice'
 import { setEmpty } from 'store/userData/postSlice'
 import { setEmptyC } from 'store/userData/categorySlice'
+import { setEmptyN } from 'store/userData/navSlice'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import supabaseClient from 'utils/supabaseClient'
@@ -83,6 +84,7 @@ const ModernLayout = props => {
 			console.log("In onbeforeunload")
 			dispatch(setEmpty())
 			dispatch(setEmptyC())
+			dispatch(setEmptyN())
 		}
 	}, [])
 

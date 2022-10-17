@@ -65,7 +65,7 @@ export async function sbInsert(table, insertData) {
 }
 
 export async function sbSelect(table, content, type, authId, inPage, fnPage) {
-    const { data,error } = await supabaseClient
+    const { data, error } = await supabaseClient
         .from(table)
         .select(content)
         .eq(type, authId)
@@ -76,7 +76,7 @@ export async function sbSelect(table, content, type, authId, inPage, fnPage) {
 }
 
 export async function sbSelectDefault(table, content, type, authId) {
-    const { data,error } = await supabaseClient
+    const { data, error } = await supabaseClient
         .from(table)
         .select(content)
         .eq(type, authId)
@@ -88,6 +88,15 @@ export async function sbStorageDelete(bucket, deleteData) {
     const { data, error } = await supabaseClient.storage
 		.from(bucket)
 		.remove(deleteData)
+
+    return { error, data };
+}
+
+export async function sbDelete(table, id) {
+    const { data, error } = await supabaseClient
+    .from(table)
+    .delete()
+    .eq('id', id)
 
     return { error, data };
 }

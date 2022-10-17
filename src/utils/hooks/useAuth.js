@@ -6,6 +6,10 @@ import appConfig from 'configs/app.config'
 import { REDIRECT_URL_KEY } from 'constants/app.constant'
 import { useNavigate } from 'react-router-dom'
 import useQuery from './useQuery'
+import { setEmptyA } from 'store/userData/authorSlice'
+import { setEmpty } from 'store/userData/postSlice'
+import { setEmptyC } from 'store/userData/categorySlice'
+import { setEmptyN } from 'store/userData/navSlice'
 
 function useAuth() {
 
@@ -82,6 +86,10 @@ function useAuth() {
     }
 
     const handleSignOut = ()  => {
+		dispatch(setEmptyA())
+		dispatch(setEmpty())
+		dispatch(setEmptyC())
+		dispatch(setEmptyN())
 		dispatch(onSignOutSuccess())
 		dispatch(setUser(initialState))
 		navigate(appConfig.unAuthenticatedEntryPath)
