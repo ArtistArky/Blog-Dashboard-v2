@@ -37,6 +37,16 @@ const navigationConfig = [
         subMenu: []
     },
     {
+        key: 'navigation',
+		path: '/navigation',
+		title: 'Navigation',
+		translateKey: 'nav.navigation',
+		icon: 'navigation',
+		type: NAV_ITEM_TYPE_ITEM,
+		authority: [],
+        subMenu: []
+    },
+    {
         key: 'collapseMenu',
 		path: '',
 		title: 'Collapse Menu',

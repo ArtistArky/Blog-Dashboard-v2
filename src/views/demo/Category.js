@@ -15,10 +15,11 @@ import supabaseClient from 'utils/supabaseClient'
 import PanelHeader from './PanelHeader'
 import * as Yup from 'yup'
 import Compress from "browser-image-compression"
+import { CatContext, useGlobalContext } from "utils/context/catContext"
 
 const openNotification = (type, text) => {
 	toast.push(
-		<Notification closable duration={0} type={type}>
+		<Notification type={type}>
 			{text}
 		</Notification>
 	)
@@ -27,7 +28,7 @@ const openNotification = (type, text) => {
 const validationSchema = Yup.object().shape({
 	catName: Yup.string().required('Category Name is required').matches(
 		/^([a-zA-Z0-9 ]){3,20}$/,
-		"Category name can only contain alphabets, digits & space with a reange of 3-20 characters"
+		"Category name can only contain alphabets, digits & space with a range of 3-20 characters"
 	),
 	featuredImg: Yup.string().required('Featured Image is required'),
 })
@@ -39,6 +40,8 @@ var inPage = 0, fnPage = maxCategory, catData = []
 var fihd, fisd;
 
 const CategorySection = ({data}) => {
+
+	const { setCategory } = useGlobalContext()
 
 	const dispatch = useDispatch()
 
@@ -66,6 +69,7 @@ const CategorySection = ({data}) => {
 	}
 
     const deleteAction = async (id) => {
+		setsyncDisabled(true)
         openNotification('info', 'Deleting....')
 
         const folderPath = 'public/'+authID+'/'+id+'/featuredImg/'+'hd.jpeg';
@@ -84,6 +88,7 @@ const CategorySection = ({data}) => {
 				  editedCatdata.splice(findIndex, 1)
 				  catData = editedCatdata
 				  console.log(catData)
+				  setCategory(catData)
 				  catData.length === 0 ? dispatch(setEmptyC()) : dispatch(deleteCategoryData(data[0]))
 				  inPage = catData.length; fnPage = catData.length + maxCategory;
 				  openNotification('success', 'Delete Complete')
@@ -266,6 +271,7 @@ const CategorySection = ({data}) => {
                     if(data) {
                         catData = [...data, ...catData]
                         console.log(catData)
+						setCategory(catData)
                         dispatch(setCategoryData(catData))
                         setBtn(false)
                         setdialogOpen(false) 
@@ -425,6 +431,8 @@ const Category = () => {
 	const authID = useSelector((state) => state.auth.user.id)
 	const authorCategory = useSelector((state) => state.userData.author.category)
 
+	const [category, setCategory] = useState() 
+
 	const [error, setError] = useState(false)
 	const [loading, setLoading] = useState(true)
 	const [btnLoading, setbtnLoading] = useState(false)
@@ -435,7 +443,8 @@ const Category = () => {
         console.log(inPage)
         console.log(fnPage)
 		//dispatch(setEmptyC())
-		if(userCategory.length === 0 && inPage == 0) {
+		if(userCategory.length === 0) {
+			inPage = 0; fnPage = maxCategory;
 			fetchCategory()
 		}else {
 			setLoading(true)
@@ -444,6 +453,7 @@ const Category = () => {
 			console.log(inPage)
 			console.log(fnPage)
 			catData = userCategory
+			setCategory(catData)
 			console.log(catData)
 			setLoading(false)
 		}
@@ -462,6 +472,7 @@ const Category = () => {
 				setLoading(false)
 			}else if(data) {
 				catData = inPage === 0 ? [...data] : [...catData, ...data]
+				setCategory(catData)
 				dispatch(setCategoryData(catData)) 
 				dispatch(updateAuthorCategory(data[0].authors.category)) 
 				inPage = catData.length; fnPage = catData.length + maxCategory;
@@ -484,7 +495,9 @@ const Category = () => {
             <Container>
 			    <PanelHeader type="Category" title="Manage Category" />
                 <Loading loading={loading}>
-                    <CategorySection data={catData} />
+					<CatContext.Provider value={{ category, setCategory }}>
+                    	<CategorySection data={category} />
+					</CatContext.Provider>
                     {
                         authorCategory > maxCategory && (
                             <div className="flex items-center justify-center mt-4">

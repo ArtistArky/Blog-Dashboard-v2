@@ -27,7 +27,7 @@ import Compress from "browser-image-compression"
 import axios from "axios"
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { setPostsData } from 'store/userData/postSlice'
+import { setEmpty } from 'store/userData/postSlice'
 import { setEmptyC } from 'store/userData/categorySlice'
 
 const { Addon } = InputGroup 
@@ -35,19 +35,13 @@ const { Addon } = InputGroup
 const validationSchema = Yup.object().shape({
 	title:  Yup.string().required('Post title cannot be empty').matches(
 		/^([A-Za-z0-9- ]){3,30}$/,
-		"Post Title can only contain alphabets & digits with a reange of 3-30 characters"
+		"Post Title can only contain alphabets & digits with a range of 3-30 characters"
 	),
 	category: Yup.string().required('Category is required'),
 	featuredImg: Yup.string().required('Featured Image is required'),
 })
 
 var fihd, fisd;
-
-const colourOptions = [
-	{ value: '622832a5-a4f1-4c2e-96e7-380b9c9b8631', label: 'test3' },
-	{ value: 'bc308b88-5727-4813-9bf4-bee2abaad94b', label: 'test' },
-	{ value: '7370f1af-1d4c-40b4-9979-601e093e48fc', label: 'test2' },
-]
 
 const CreatePost = ({data}) => {
 
@@ -85,7 +79,7 @@ const CreatePost = ({data}) => {
 		  }
 			
 		  if(data) {
-			  var catList = []
+			  var catList = [{ value: "255d4855-644e-43ab-829b-16adc417df97", label: 'None' }]
 			  data.map((item) => {
 				catList.push({ value: item.id, label: item.name })
 			  });
@@ -264,7 +258,7 @@ const CreatePost = ({data}) => {
 								if(data) {
 									const postData = [...data, ...userPosts]
 									console.log(postData)
-									dispatch(setPostsData(postData)) 
+									dispatch(setEmpty()) 
 									dispatch(setEmptyC()) 
 									setBtn(false)
 									navigate('/posts')
