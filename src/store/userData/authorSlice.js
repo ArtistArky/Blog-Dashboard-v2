@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit'
 
 export const initialState = {
     id: '',
-    username: '',
+    username: null,
     posts: 0,
     category: 0,
     created_at: '',
