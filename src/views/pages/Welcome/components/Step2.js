@@ -12,7 +12,7 @@ const validationSchema = Yup.object().shape({
 		"Blog name can only contain lowercase alphabets & digits with a reange of 6-30 characters"
 	  ),
 	title: Yup.string().required('Blog title is required').matches(
-		/^([A-Za-z0-9 ]){6,30}$/,
+		/^([A-Za-z0-9 \u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff] ]){3,500}$/,
 		"Blog Title can only contain alphabets & digits with a reange of 6-30 characters"
 	  ),
 })

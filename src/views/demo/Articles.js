@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Card, Button, Tooltip, Avatar, Badge, Notification, toast, Error } from 'components/ui'
-import { Loading, TextEllipsis, UsersAvatarGroup } from 'components/shared'
+import { Loading, TextEllipsis, ConfirmDialog, UsersAvatarGroup } from 'components/shared'
 //import Confirmations  from './Confirmations'
 import { updateAuthorPosts } from 'store/userData/authorSlice'
 import { setPostsData, setEmpty, deletePostData } from 'store/userData/postSlice'
@@ -36,6 +36,10 @@ const PostSection = ({data}) => {
 
 	const [syncDisabled, setsyncDisabled] = useState(false)
 
+    const [postTitle, setpostTitle] = useState()
+    const [postContent, setpostContent] = useState()
+    const [confirmdialogOpen, setconfirmdialogOpen] = useState(false)
+
 	const navigate = useNavigate()
 
 	const syncPost = (docsid, postTitle) => {
@@ -66,6 +70,18 @@ const PostSection = ({data}) => {
 		});
 	}
 	
+	const onCategoryDeleteConfirmationClose = () => {
+		setconfirmdialogOpen(false)
+	}
+
+    const onCategoryDeleteConfirm = async () => { 
+        setconfirmdialogOpen(false)
+		console.log(postTitle)
+		console.log(postContent)
+		deletePosts(postTitle, postContent)
+    
+    }
+
 	const deletePosts = async (posttitle, post) => {
 		setsyncDisabled(true)
 
@@ -147,7 +163,11 @@ const PostSection = ({data}) => {
 										variant="plain"
 										size="sm" 
 										disabled={syncDisabled}
-										onClick={() => deletePosts(article.posttitle, article.post)}
+										onClick={() => {
+											setpostTitle(article.posttitle)
+											setpostContent(article.post)
+											setconfirmdialogOpen(true)
+										}}
 										icon={<GrTrash className='opacity-70' />} 
 									/>
 								</Tooltip>
@@ -165,6 +185,21 @@ const PostSection = ({data}) => {
 						</div>
 					</Card>
 				))}
+                <ConfirmDialog
+                    isOpen={confirmdialogOpen}
+                    onClose={onCategoryDeleteConfirmationClose}
+                    onRequestClose={onCategoryDeleteConfirmationClose}
+                    type="danger"
+                    title="Delete Post"
+                    onCancel={onCategoryDeleteConfirmationClose}
+                    onConfirm={onCategoryDeleteConfirm}
+                    confirmButtonColor="red-600"
+                >
+                    <p>
+                        Are you sure you want to delete this post?
+                        Note:- This action cannot be undone.
+                    </p>
+                </ConfirmDialog>
 			</div>
 		</div>
 	)

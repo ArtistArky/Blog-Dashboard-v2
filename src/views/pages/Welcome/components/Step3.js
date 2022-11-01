@@ -29,8 +29,6 @@ const roles = [
 
 const validationSchema = Yup.object().shape({
 	description: Yup.string().required('Blog Description is required'),
-	logoimg: Yup.string().required('Blog Logo is required'),
-	faviconimg: Yup.string().required('Blog Favicon is required'),
 })
 
 const Step3 = ({ onNext, onBack }) => {
