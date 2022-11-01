@@ -53,14 +53,17 @@ const ModernLayout = props => {
 	const authID = useSelector((state) => state.auth.user.id)
 
 	const checkAuthor = async () => {
-		var user = await supabaseClient.auth.session();
-		console.log(user);
-		if(author === initialState) {
-			fetchAuthorData();
+		console.log(author)
+		console.log(initialState)
+		if(JSON.stringify(author) === JSON.stringify(initialState)) {
+			console.log("I")
+			fetchAuthorData()
 		}else if(author.username === null) {
-			dispatch(updateOnboard(false));
+			console.log("O")
+			dispatch(updateOnboard(false))
 		}else {
-			dispatch(updateOnboard(true));
+			console.log("U")
+			dispatch(updateOnboard(true))
 		}
 	}
 

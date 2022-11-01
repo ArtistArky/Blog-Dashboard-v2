@@ -29,14 +29,12 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { setEmpty } from 'store/userData/postSlice'
 import { setEmptyC } from 'store/userData/categorySlice'
+import supabaseClient from 'utils/supabaseClient'
 
 const { Addon } = InputGroup 
 
 const validationSchema = Yup.object().shape({
-	title:  Yup.string().required('Post title cannot be empty').matches(
-		/^([A-Za-z0-9- ]){3,30}$/,
-		"Post Title can only contain alphabets & digits with a range of 3-30 characters"
-	),
+	title:  Yup.string().required('Post title cannot be empty'),
 	category: Yup.string().required('Category is required'),
 	featuredImg: Yup.string().required('Featured Image is required'),
 })
@@ -52,12 +50,12 @@ const CreatePost = ({data}) => {
 	const [openPicker, authResponse] = useDrivePicker()
 
 	const userPosts = useSelector((state) => state.userData.posts)
-	const { username } = useSelector((state) => state.userData.author)
 	const authID = useSelector((state) => state.auth.user.id)
 	const provider = useSelector((state) => state.auth.session.providerToken)
 
-	const [categoryList, setcategoryList] = useState();
+	const [categoryList, setcategoryList] = useState()
 	const [postTitle, setpostTitle] = useState("")
+	const [catId, setcatId] = useState("")
 	const [docs, setDocs] = useState()
 	const [docsName, setdocsName] = useState("Select your Google Docs from your Google Account")
 	const [postmetaCon, setpostmetaCon] = useState(false)
@@ -123,7 +121,9 @@ const CreatePost = ({data}) => {
 		return valid;
     }
 
-	const createPicker = () => {
+	const createPicker = async () => {
+		const session = await supabaseClient.auth.session();
+		console.log(session)
 		if(provider) {
 		  openPicker({
 			clientId: process.env.REACT_GAUTHDOCS_CLIENTID,
@@ -303,8 +303,8 @@ const CreatePost = ({data}) => {
 					<Formik
 						initialValues={{
 							title: postTitle,
-							category: '',
-							featuredImg: '',
+							category: catId,
+							featuredImg: fihighRes,
 						}}
 						enableReinitialize
 						validationSchema={validationSchema}
@@ -333,7 +333,10 @@ const CreatePost = ({data}) => {
 													placeholder="Select"
 													onFocus={fetchCatList}
 													isLoading={loading}
-													onChange={option => form.setFieldValue(field.name, option.value)}
+													onChange={option => {
+														setcatId(option.value)
+														form.setFieldValue(field.name, option.value)
+													}}
 												/>
 												)}
 											</Field>
