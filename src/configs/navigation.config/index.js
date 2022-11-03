@@ -47,6 +47,16 @@ const navigationConfig = [
         subMenu: []
     },
     {
+        key: 'newsletter',
+		path: '/newsletter',
+		title: 'Newsletter',
+		translateKey: 'nav.newsletter',
+		icon: 'newsletter',
+		type: NAV_ITEM_TYPE_ITEM,
+		authority: [],
+        subMenu: []
+    },
+    {
         key: 'collapseMenu',
 		path: '',
 		title: 'Collapse Menu',

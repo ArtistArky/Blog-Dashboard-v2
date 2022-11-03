@@ -81,7 +81,7 @@ const CategorySection = ({data}) => {
             if(data) {
                 
 			  await sbUserDataDelete('category', 'id', id, 'createdby', authID).then(({ error, data }) => {
-				if(error) throw openNotification('error', error.message)
+				if(error) throw openNotification('danger', error.message)
 				if(data) {
 				  var editedCatdata = [...catData]
 				  const findIndex = editedCatdata.findIndex(a => a.id === data[0].id)

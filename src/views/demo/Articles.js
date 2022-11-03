@@ -56,7 +56,7 @@ const PostSection = ({data}) => {
 		axios.request(options).then(async (response) => {
 			console.log(response.data)
 			await sbUpdate('posts', postTitle, {post: response.data}, 'posttitle').then(({ error, data }) => {
-				if(error) throw openNotification('error', error.message)
+				if(error) throw openNotification('danger', error.message)
 				if(data) {
 				  console.log(data)
 				  openNotification('success', 'Sync Complete')
@@ -65,7 +65,7 @@ const PostSection = ({data}) => {
 			})
 	
 		}).catch((error) => {
-		  openNotification('error', error.message)
+		  openNotification('danger', error.message)
 		  setsyncDisabled(false)
 		});
 	}
@@ -101,10 +101,10 @@ const PostSection = ({data}) => {
 		console.log(res)
 
 		await sbStorageDelete('posts', res).then(async ({ error, data }) => {
-			if(error) throw openNotification('error', error.message)
+			if(error) throw openNotification('danger', error.message)
 			if(data) {
 			  await sbUserDataDelete('posts', 'posttitle', posttitle, 'postedby', authID).then(({ error, data }) => {
-				if(error) throw openNotification('error', error.message)
+				if(error) throw openNotification('danger', error.message)
 				if(data) {
 				  var editedPostdata = [...postData]
 				  const findIndex = editedPostdata.findIndex(a => a.posttitle === data[0].posttitle)

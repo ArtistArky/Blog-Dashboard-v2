@@ -34,6 +34,12 @@ export const protectedRoutes = [
         authority: [],
     },
     {
+        key: 'newsletter',
+        path: '/newsletter',
+        component: React.lazy(() => import('views/demo/Newsletter')),
+        authority: [],
+    },
+    {
         key: 'collapseMenu.item1',
         path: '/collapse-menu-item-view-1',
         component: React.lazy(() => import('views/demo/CollapseMenuItemView1')),
