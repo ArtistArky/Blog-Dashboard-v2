@@ -7,7 +7,7 @@ import {
     HiOutlineHome
 } from 'react-icons/hi'
 
-import { BiCategory, BiNavigation } from "react-icons/bi"
+import { BiCategory, BiNavigation, BiUserPin } from "react-icons/bi"
 
 import { GrHome,  GrDocumentImage } from "react-icons/gr";
 
@@ -16,9 +16,7 @@ const navigationIcon = {
     posts: <GrDocumentImage className='opacity-60' />,
     category: <BiCategory />,
     navigation: <BiNavigation />,
-    collapseMenu: <HiOutlineTemplate />,
-    groupSingleMenu: <HiOutlineDesktopComputer />,
-    groupCollapseMenu: <HiOutlineColorSwatch />
+    newsletter: <BiUserPin className='opacity-80' />,
 }
 
 export default navigationIcon
