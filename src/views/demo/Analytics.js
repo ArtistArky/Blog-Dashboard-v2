@@ -12,6 +12,7 @@ const Analytics = () => {
 
     useEffect(() => {
         console.log(mode)
+        console.log(aURL)
     }, [])
     //test
 	return (

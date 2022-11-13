@@ -98,6 +98,25 @@ const Step3 = ({ onNext, onBack }) => {
 	};
 	var config3 = {...config1}
 	console.log(config3)
+	
+	const checkImgs = (values) => { 
+		const { logoimg, faviconimg } = values;
+
+        var images = [];
+        var name = [];
+
+        if(logoimg && faviconimg) {
+          images = [logoimg, faviconimg]
+          name = ['logo.jpeg', 'favicon.jpeg']
+        }else if(logoimg) {
+			images = [logoimg]
+			name = ['logo.jpeg']
+		}else if(faviconimg) {
+			images = [faviconimg]
+			name = ['favicon.jpeg']
+		}
+        return {images,name}
+    }
 
 	const request2 = (values) => {
 		
@@ -110,27 +129,30 @@ const Step3 = ({ onNext, onBack }) => {
 				const sharedurl = response2.url
 				console.log(sharedurl)
 
-				const name = ['logo.jpeg', 'favicon.jpeg']
-				const images = [values.logoimg, values.faviconimg]
+				const {images, name} = checkImgs(values)
+        		console.log(images)
 				//const imagepath = 'public/'+authId+'/images/'+name[i];
 				console.log(authID)
-				console.log(images)
 		
-				openNotification('info', 'Analytics Configured. Uploading images....')
-				for(var i = 0; i < images.length; i++) {
-					console.log(i)
-					const imagepath = 'public/'+authID+'/images/'+name[i];
-					await sbUpload('authors', imagepath, images[i]).then(({publicURL}) => {
-						if(publicURL) {
-						  console.log(publicURL);
-						  const mainurl = publicURL + '?' + new Date().getTime();
-						  (name[i] == 'logo.jpeg') ? logo = mainurl : favicon = mainurl;
-						}
-					})
+				if(images.length > 0) {
+		
+					openNotification('info', 'Analytics Configured. Uploading images....')
+					for(var i = 0; i < images.length; i++) {
+						console.log(i)
+						const imagepath = 'public/'+authID+'/images/'+name[i];
+						await sbUpload('authors', imagepath, images[i]).then(({publicURL}) => {
+							if(publicURL) {
+							  console.log(publicURL);
+							  const mainurl = publicURL + '?' + new Date().getTime();
+							  (name[i] == 'logo.jpeg') ? logo = mainurl : favicon = mainurl;
+							}
+						})
+					}
+	
+					openNotification('info', 'Images uploaded. Saving the details...')
 				}
 				console.log(logo); console.log(favicon);
 
-				openNotification('info', 'Images uploaded. Saving the details...')
 				const updateData = {
 					title: steps.title,
 					description: values.description,
