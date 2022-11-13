@@ -30,6 +30,7 @@ import { useNavigate } from 'react-router-dom'
 import { setEmpty } from 'store/userData/postSlice'
 import { setEmptyC } from 'store/userData/categorySlice'
 import supabaseClient from 'utils/supabaseClient'
+import { v4 as uuidv4 } from 'uuid';
 
 const { Addon } = InputGroup 
 
@@ -202,12 +203,14 @@ const CreatePost = ({data}) => {
 
 		const { title, category } = values
 
-		var postTitle = title.replace(/ /g, "-").toLowerCase()
+		var postTitle = title.replace(/[^a-zA-Z0-9 ]/g, "").replace(/ /g, "-").toLowerCase()
+		var postId = uuidv4()
+		console.log(postId)
 		
 		const options = {
 			method: 'GET',
 			url: 'https://stensil-backend.herokuapp.com/api',
-			params: {fileId: docs, accessToken: provider, title: postTitle, authid: authID },
+			params: {fileId: docs, accessToken: provider, title: postId, authid: authID },
 		}
 
 		await checkDetails(postTitle, "posttitle", "posttitle", "posts").then(async (res) => { 
@@ -220,52 +223,69 @@ const CreatePost = ({data}) => {
 
 				axios.request(options).then(async (response) => {
 					console.log(response.data)
-					openNotification('success', 'Conversion of Google Docs file id to blog post completed. Uploading featured image....')
+										
+					const insertData = [
+					  { id: postId, posttitle: postTitle, title: title, category: category, post: response.data, postedby: authID, docsid: docs },
+					]
 
-					const images = [fihighRes, filowRes]
-					const imagesName = ['hd.jpeg','sd.jpeg']
+					await sbInsert('posts', insertData).then(async (res) => {
+                
+						if(res.error) {
+							setBtn(false)
+							openNotification('danger', error.message)
+						}
+						if(res.data) {
+							openNotification('info', 'Conversion of Google Docs file id to blog post completed. Uploading featured image. Please wait....')
 
-					for(var i = 0; i < images.length; i++) {
-						const imagepath = 'public/'+authID+'/'+postTitle+'/featuredImg/'+ imagesName[i]
+							const images = [fihighRes, filowRes]
+							const imagesName = ['hd.jpeg','sd.jpeg']
 
-						await sbUpload('posts', imagepath, images[i]).then(({error, publicURL}) => {
+							for(var i = 0; i < images.length; i++) {
+								const imagepath = 'public/'+authID+'/'+postId+'/featuredImg/'+ imagesName[i]
+
+								await sbUpload('posts', imagepath, images[i]).then(({error, publicURL}) => {
+									if(error) {
+										setBtn(false)
+										openNotification('danger', error.message)
+									}
+									if(publicURL) {
+										const mainurl = publicURL + '?' + new Date().getTime();
+										(imagesName[i] === 'hd.jpeg') ? fihd = mainurl : fisd = mainurl
+									}
+								})
+
+							}
+							openNotification('info', 'Featured Image uploaded. Saving the details....')
+
+							console.log(fihd); console.log(fisd);
+
+							const postUrl = '/posts/'+postTitle
+							
+							const { data, error } = await supabaseClient.from('posts').update(
+								{ featured_imghd: fihd, featured_imgsd: fisd, href: postUrl }
+							)
+							.eq('id', postId)
+							.eq('postedby', authID);
 							if(error) {
 								setBtn(false)
 								openNotification('danger', error.message)
 							}
-							if(publicURL) {
-							  (imagesName[i] === 'hd.jpeg') ? fihd = publicURL : fisd = publicURL
+							if(data) {
+								await sbSelectDefault('posts', '*, authors!inner(*), category!inner(*)', 'posttitle', postTitle).then(({ data }) => {
+									if(data) {
+										const postData = [...data, ...userPosts]
+										console.log(postData)
+										dispatch(setEmpty()) 
+										dispatch(setEmptyC()) 
+										setBtn(false)
+										navigate('/posts')
+									}
+								})
 							}
-						})
-
-					}
-					openNotification('info', 'Featured Image uploaded. Saving the details....')
-
-					console.log(fihd); console.log(fisd);
-
-					const postUrl = '/posts/'+postTitle
-
-					const insertData = [
-					  { posttitle: postTitle, title: title, category: category, post: response.data, featured_imghd: fihd, featured_imgsd: fisd, postedby: authID, docsid: docs, href: postUrl },
-					]
-
-					await sbInsert('posts', insertData).then(async ({ data }) => {
-						if(data) {
-
-							openNotification('success', 'Post Created successfully. Please wait....')
 							
-							await sbSelectDefault('posts', '*, authors!inner(*), category!inner(*)', 'posttitle', postTitle).then(({ data }) => {
-								if(data) {
-									const postData = [...data, ...userPosts]
-									console.log(postData)
-									dispatch(setEmpty()) 
-									dispatch(setEmptyC()) 
-									setBtn(false)
-									navigate('/posts')
-								}
-							})
 						}
 					})
+
 
 				}).catch((error) => {
 					setBtn(false)
@@ -323,6 +343,10 @@ const CreatePost = ({data}) => {
 												name="title" 
 												placeholder="Title" 
 												component={Input}
+												onChange={e => {
+													console.log(e.target.value)
+													setpostTitle(e.target.value)
+												}}
 											/>
 										</FormRow>
 										<FormRow name="category" label="Category" {...validatorProps} >
