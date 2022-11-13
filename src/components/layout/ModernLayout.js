@@ -110,7 +110,7 @@ const ModernLayout = props => {
 					{
 						onboardStatus === true && <SideNav />
 					}
-					<div className="flex flex-col flex-auto min-h-screen min-w-0 relative w-full dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700">
+					<div className="flex flex-col flex-auto min-h-screen min-w-0 relative w-full bg-white dark:bg-white border-l border-gray-200 dark:border-gray-700">
 						<Header 
 							className="border-b border-gray-200 dark:border-gray-700" 
 							headerEnd={<HeaderActionsEnd />} 

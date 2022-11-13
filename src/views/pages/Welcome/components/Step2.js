@@ -1,10 +1,13 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Button, FormItem, FormContainer, Select, InputGroup, Input } from 'components/ui'
 import { Field, Form, Formik, ErrorMessage } from 'formik'
 import { HiArrowSmLeft } from 'react-icons/hi'
 import * as Yup from 'yup'
 import { useDispatch, useSelector } from 'react-redux'
 import { stepOne } from 'store/onboard/onboardSlice'
+import { actualTZ } from 'mock/data/actualTZ'
+
+import AsyncSelect from 'react-select/async'
 
 const validationSchema = Yup.object().shape({
 	blogName: Yup.string().required('Blog name is required').matches(
@@ -15,23 +18,51 @@ const validationSchema = Yup.object().shape({
 		/^([A-Za-z0-9 \u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff] ]){3,500}$/,
 		"Blog Title can only contain alphabets & digits with a reange of 6-30 characters"
 	  ),
+	timezone: Yup.string().required('Time Zone is required for viewing the Analytics'),
 })
 
-const sizes = [
-	{label: 'Solo', value: 'solo'},
-	{label: '2 ~ 10 members', value: '2~10'},
-	{label: '11 ~ 50 members', value: '11~50'},
-	{label: '51 ~ 200 members', value: '51~200'},
-	{label: '201 ~ 500 members', value: '201~500'}
-]
+const allowed = ['value'];
+
+// const timezoneList = Object.keys(actualTZ[0])
+//   .filter(key => allowed.includes(key))
+//   .reduce((obj, key) => {
+//     obj[key] = actualTZ[key];
+//     return obj;
+//   }, {});
+
+actualTZ.forEach(object => {
+	delete object['offset'];
+	delete object['label2'];
+});
+
+console.log(actualTZ);
 
 const { Addon } = InputGroup 
+
+const filterColors = (inputValue) => {
+	return actualTZ.filter((i) =>
+		i.label.includes(inputValue)
+	)
+}
+
+const loadOptions = ( inputValue, callback ) => {
+	setTimeout(() => {
+		callback(filterColors(inputValue))
+	}, 1000)
+}
 
 const Step2 = ({ onNext, onBack }) => {
 
     const dispatch = useDispatch()
 
-	const stepone =  useSelector((state) => state.onboard)
+	const stepone =  useSelector((state) => state.onboard)	
+
+	const [_, setValue] = useState('')
+
+	const handleInputChange = (newValue) => {
+		setValue(newValue)
+		return newValue
+	}
 
 	return (
 		<div className="text-center">
@@ -40,7 +71,8 @@ const Step2 = ({ onNext, onBack }) => {
 				<Formik
 					initialValues={{
 						blogName: stepone.blog_name,
-						title: stepone.title
+						title: stepone.title,
+						timezone: stepone.timezone
 					}}
 					validationSchema={validationSchema}
 					onSubmit={(values) => {
@@ -64,7 +96,7 @@ const Step2 = ({ onNext, onBack }) => {
 											render={({ field /* { name, value, onChange, onBlur } */ }) => (
 												<InputGroup className="mb-4">
 													<Input {...field} />
-													<Addon>.inkflow.com</Addon>
+													<Addon>{process.env.REACT_APP_SITE_URL}</Addon>
 												</InputGroup>
 											)}
 										/>
@@ -82,6 +114,31 @@ const Step2 = ({ onNext, onBack }) => {
 											component={Input} 
 										/>
 										<ErrorMessage name="title"  render={msg => <div className='text-red-500 text-left'>{msg}</div>} />
+									</FormItem>
+									<FormItem 
+										label="Time Zone"
+										invalid={errors.timezone && touched.timezone}
+									 >
+										<Field name="timezone">
+											{({ field, form }) => (
+											<Select
+												options={actualTZ}
+												placeholder="Select"
+												cacheOptions
+												defaultOptions
+												loadOptions={loadOptions}
+												onInputChange={handleInputChange}
+												componentAs={AsyncSelect}
+												defaultValue={{label: stepone.timezone, value: stepone.timezone }}
+												//onFocus={fetchCatList}
+												//isLoading={loading}
+												onChange={option => {
+													form.setFieldValue(field.name, option.value)
+												}}
+											/>
+											)}
+										</Field>
+										<ErrorMessage name="timezone" render={msg => <div className='text-red-500 text-left'>{msg}</div>} />
 									</FormItem>
 									<FormItem>
 										<Button block variant="solid" type="submit">Continue</Button>

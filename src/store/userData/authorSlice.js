@@ -15,6 +15,7 @@ export const initialState = {
     logoimg: '',
     faviconimg: '',
     onboard: false,
+    aurl: '',
 }
 
 export const authorSlice = createSlice({
@@ -28,6 +29,7 @@ export const authorSlice = createSlice({
             state.username = action.payload.username
             state.logoimg = action.payload.logoimg
             state.faviconimg = action.payload.faviconimg
+            state.aurl = action.payload.aurl
         },
         updateAuthorPosts: (state, action) => {
             state.posts = action.payload

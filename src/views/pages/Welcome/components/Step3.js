@@ -17,6 +17,7 @@ import * as Yup from 'yup'
 import { sbUpload, sbUpdate } from 'services/ApiService'
 import { stepTwo } from 'store/onboard/onboardSlice'
 import { updateAuthorData } from 'store/userData/authorSlice'
+import axios from "axios"
 
 const roles = [
 	{ value: 'softwareEngineer', label: 'Software Engineer', icon: <HiOutlineCode /> },
@@ -30,6 +31,8 @@ const roles = [
 const validationSchema = Yup.object().shape({
 	description: Yup.string().required('Blog Description is required'),
 })
+
+var logo, favicon;
 
 const Step3 = ({ onNext, onBack }) => {
 
@@ -68,50 +71,112 @@ const Step3 = ({ onNext, onBack }) => {
 		onNext?.()
 	}
 
+	const siteurl = steps.blog_name+'.'+process.env.REACT_APP_SITE_URL
+
+	var form1 = new FormData()
+	form1.append('domain', siteurl)
+	form1.append('timezone', steps.timezone)
+	var form2 = new FormData()
+	form2.append('site_id', siteurl)
+	form2.append('name', steps.blog_name)
+	
+	const url1 = process.env.REACT_APP_PSITE_AURL
+	const url2 = url1.toString()+'/shared-links'
+
+	console.log(url1)
+	console.log(url2)
+
+	var config1 = {
+		headers: { 
+		  'Authorization': `Bearer ${process.env.REACT_APP_PSITE}`, 
+		},
+	};
+	var config2 = {
+		headers: { 
+		  'Authorization': `Bearer ${process.env.REACT_APP_PSITE}`, 
+		},
+	};
+	var config3 = {...config1}
+	console.log(config3)
+
+	const request2 = (values) => {
+		
+		axios.request({ method: 'PUT', url: url2, ...config2, data: form2 }).then(async (response) => {
+			const response2 = response.data
+			console.log(response2)
+
+			if(response2) {
+
+				const sharedurl = response2.url
+				console.log(sharedurl)
+
+				const name = ['logo.jpeg', 'favicon.jpeg']
+				const images = [values.logoimg, values.faviconimg]
+				//const imagepath = 'public/'+authId+'/images/'+name[i];
+				console.log(authID)
+				console.log(images)
+		
+				openNotification('info', 'Analytics Configured. Uploading images....')
+				for(var i = 0; i < images.length; i++) {
+					console.log(i)
+					const imagepath = 'public/'+authID+'/images/'+name[i];
+					await sbUpload('authors', imagepath, images[i]).then(({publicURL}) => {
+						if(publicURL) {
+						  console.log(publicURL);
+						  const mainurl = publicURL + '?' + new Date().getTime();
+						  (name[i] == 'logo.jpeg') ? logo = mainurl : favicon = mainurl;
+						}
+					})
+				}
+				console.log(logo); console.log(favicon);
+
+				openNotification('info', 'Images uploaded. Saving the details...')
+				const updateData = {
+					title: steps.title,
+					description: values.description,
+					username: steps.blog_name,
+					logoimg: logo,
+					faviconimg: favicon, 
+					aurl: sharedurl
+				}
+				await sbUpdate('authors', authID, updateData, 'id').then(({ data }) => {
+					if(data) {
+						setbtnLoading(false);
+						dispatch(updateAuthorData(updateData))
+						window.location.reload();
+					}
+				})
+
+			}
+		}).catch(errors => {
+			setbtnLoading(false)
+			openNotification('danger', errors.message)
+		})
+	}
+
     const submitOnboard = async (values) => {
 		setbtnLoading(true);
 		dispatch(stepTwo(values))
 
-		const name = ['logo.jpeg', 'favicon.jpeg']
-		const images = [values.logoimg, values.faviconimg]
-        //const imagepath = 'public/'+authId+'/images/'+name[i];
-		console.log(authID)
-		var logo, favicon;
+		openNotification('info', 'Configuring Analytics...')
 
-		openNotification('info', 'Uploading images....')
-		for(var i = 0; i < images.length; i++) {
-			const imagepath = 'public/'+authID+'/images/'+name[i];
-			await sbUpload(imagepath, images[i]).then(({error, publicURL}) => {
-				if(error) {
-					setbtnLoading(false);
-					openNotification('error', error.message)
-				}
-				if(publicURL) {
-				  console.log(publicURL);
-				  const mainurl = publicURL + '?' + new Date().getTime();
-				  (name[i] == 'logo.jpeg') ? logo = mainurl : favicon = mainurl;
-				}
-			})
-		}
-		openNotification('info', 'Images uploaded. Saving the details....')
-		console.log(logo); console.log(favicon);
-		const updateData = {
-			title: steps.title,
-			description: values.description,
-			username: steps.blog_name,
-			logoimg: logo,
-			faviconimg: favicon, 
-		}
-		await sbUpdate('authors', authID, updateData, 'id').then(({ error, data }) => {
-			if(error) {
-				setbtnLoading(false);
-				openNotification('error', error.message)
+		axios.request({ method: 'POST', url: url1.toString(), ...config1, data: form1 }).then(async (response) => {
+			const response1 = response.data
+			console.log(response1)
+
+			if(response1) {
+				request2(values)
 			}
-			if(data) {
-				setbtnLoading(false);
-				dispatch(updateAuthorData(updateData))
-				window.location.reload();
+		}).catch(errors => {
+			if(errors.status = 400) {
+				console.log("Site Created")
+				request2(values)
+			}else {
+				setbtnLoading(false)
+				console.log(errors)
+				openNotification('danger', errors.message)
 			}
+
 		})
 	}
 
@@ -121,7 +186,7 @@ const Step3 = ({ onNext, onBack }) => {
 		console.log(file)
 		console.log(fileList)
         const allowedFileType = ['image/jpeg', 'image/png']
-        const maxFileSize = 150000
+        const maxFileSize = 200000
 
         if(fileList.length >= 1) {
             return `You can only upload 1 image file`

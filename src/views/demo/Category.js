@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom'
 import { sbSelect, sbUpdate, sbStorageDelete, sbUserDataDelete, sbInsert, sbUpload } from 'services/ApiService'
 import axios from "axios"
 import { HiOutlinePlus } from 'react-icons/hi'
-import { GrTrash, GrSync } from 'react-icons/gr'
+import { GrTrash, GrEdit } from 'react-icons/gr'
 import supabaseClient from 'utils/supabaseClient'
 import PanelHeader from './PanelHeader'
 import * as Yup from 'yup'
@@ -35,7 +35,7 @@ const validationSchema = Yup.object().shape({
 
 const maxCategory = 2
 
-var inPage = 0, fnPage = maxCategory, catData = []
+var inPage = 0, fnPage = maxCategory, catData = [], initFormState
 
 var fihd, fisd;
 
@@ -54,6 +54,8 @@ const CategorySection = ({data}) => {
     const [dialogOpen, setdialogOpen] = useState(false)
 	const [fihighRes, setfihighRes] = useState()
 	const [filowRes, setfilowRes] = useState()
+	const [mode, setMode] = useState()
+	const [fiImgUrl, setfiImgUrl] = useState()
 
 	const [btnLoading, setbtnLoading] = useState(false)
 	const [btnDisabled, setbtnDisabled] = useState(false)
@@ -155,8 +157,10 @@ const CategorySection = ({data}) => {
 			Compress(file, lowresOptions)
 			.then(compressedBlob => {
 				const convertedBlobFile = new File([compressedBlob], filesdName, { type: filetype, lastModified: Date.now()})
-				setfilowRes(convertedBlobFile)
+				const url = URL.createObjectURL(convertedBlobFile)
 				console.log(convertedBlobFile)
+				setfilowRes(convertedBlobFile)
+				setfiImgUrl(url)
 				openNotification('success', 'Featured Image conversion complete. You can now proceed to submit the post')
 				form.setFieldValue(field.name, convertedBlobFile)
 				setbtnDisabled(false)
@@ -203,7 +207,7 @@ const CategorySection = ({data}) => {
     const saveCategory = async ({ catName }) => {
         setBtn(true)
 
-        var categoryTitle = catName.replace(/ /g, "-").toLowerCase();
+        var categoryTitle = catName.replace(/[^a-zA-Z0-9 ]/g, "").replace(/ /g, "-").toLowerCase();
 
         const { data, error } = await supabaseClient
         .from("category")
@@ -250,7 +254,8 @@ const CategorySection = ({data}) => {
 								openNotification('danger', error.message)
 							}
 							if(publicURL) {
-							  (imagesName[i] === 'hd.jpeg') ? fihd = publicURL : fisd = publicURL
+							  const mainurl = publicURL.toString() + '?' + new Date().getTime();
+							  (imagesName[i] === 'hd.jpeg') ? fihd = mainurl : fisd = mainurl
 							}
 						})
 
@@ -283,6 +288,75 @@ const CategorySection = ({data}) => {
         }
     
     }
+	
+	const checkImgs = () => { 
+        var images = [];
+        var imagesName = [];
+        if(fihighRes) {
+          images = [fihighRes, filowRes]
+          imagesName = ['hd.jpeg', 'sd.jpeg']
+        }
+        return {images,imagesName}
+    }
+
+	const editCat = async ({ catName }) => {
+		setBtn(true)
+		
+		var catTitle = catName.replace(/[^a-zA-Z0-9 ]/g, "").replace(/ /g, "-").toLowerCase()
+		
+		openNotification('info', 'Uploading featured Image. Please wait....')
+
+        const {images, imagesName} = checkImgs();
+        console.log(images);
+		
+		if(images.length > 0) {
+			
+			for(var i = 0; i < images.length; i++) {
+				const imagepath = 'public/'+authID+'/'+categoryId+'/featuredImg/'+ imagesName[i]
+
+				await sbUpload('category', imagepath, images[i]).then(({error, publicURL}) => {
+					if(error) {
+						setBtn(false)
+						openNotification('danger', error.message)
+					}
+					if(publicURL) {
+						const mainurl = publicURL.toString() + '?' + new Date().getTime();
+						(imagesName[i] === 'hd.jpeg') ? fihd = mainurl : fisd = publicURL
+					}
+				})
+
+			}
+			openNotification('info', 'Featured Image uploaded. Saving the details....')
+		}
+
+		console.log(fihd); console.log(fisd)
+		
+		const catUrl = '/category/'+catTitle
+		
+		const { data, error } = await supabaseClient.from('category').update(
+			{ title: catTitle, name: catName, featured_imghd: fihd, featured_imgsd: fisd, href: catUrl }
+		)
+		.eq('id', categoryId)
+		.eq('createdby', authID);
+		if(error) {
+			setBtn(false)
+			openNotification('danger', error.message)
+		}
+		if(data) {
+			openNotification('success', "Saved successfully")
+			onCategoryAddDialogClose()
+			window.location.reload()
+		}
+	}
+	
+	const categoryFun = async (values) => {
+		console.log(mode)
+		if(mode === "Add") {
+			saveCategory(values)
+		}else {
+			editCat(values)
+		}
+	}
 
 	return (
 		<div className="mb-6">
@@ -292,15 +366,12 @@ const CategorySection = ({data}) => {
                     onClose={onCategoryAddDialogClose}
                     onRequestClose={onCategoryAddDialogClose}
                 >
-                    <h5 className="mb-4">Add Category</h5>
+                    <h5 className="mb-4">{mode} Category</h5>
                     <div>
                         <Formik
-                            initialValues={{
-                                catName: '',
-                                featuredImg: '',
-                            }}
+                            initialValues={initFormState}
                             validationSchema={validationSchema}
-                            onSubmit={(values) => saveCategory(values)}
+                            onSubmit={(values) => categoryFun(values)}
                         >
                             {({values, touched, errors}) => {
                                 return (
@@ -324,19 +395,20 @@ const CategorySection = ({data}) => {
                                                 invalid={errors.featuredImg && touched.featuredImg}
                                             >
                                                 <Field name="featuredImg">
-                                                    {({ form, field }) => ( 	
-                                                        <Upload 
-                                                            className="cursor-pointer" 
-                                                            showList={true}
-                                                            draggable
-                                                            accept=".jpg,.jpeg,.png"
-                                                            beforeUpload={(file, fileList) => beforeUpload(file, fileList)}
-                                                            onFileRemove={() => {
-                                                                form.setFieldValue(field.name, '')
-                                                            }}
-                                                            onChange={async (file)=> await getFile(file, form, field)} 
-                                                        >
-                                                        </Upload>
+                                                    {({ form, field }) => ( 
+														<Upload 
+															className="cursor-pointer" 
+															showList={true}
+															accept=".jpg,.jpeg,.png"
+															beforeUpload={(file, fileList) => beforeUpload(file, fileList)}
+															onFileRemove={() => {
+																form.setFieldValue(field.name, '')
+																setfiImgUrl()
+															}}
+															onChange={(file)=> getFile(file, form, field)} 
+														>
+															<Avatar size={60} src={fiImgUrl} icon={<HiOutlinePlus />} />
+														</Upload>	
                                                     )}
                                                 </Field>
                                                 <ErrorMessage name="featuredImg" render={msg => <div className='text-red-500 text-left'>{msg}</div>} />
@@ -354,8 +426,16 @@ const CategorySection = ({data}) => {
 				<Card
 					className="group flex justify-center items-center border-dashed border-2 border-gray-400 hover:border-indigo-600" 
 					clickable
-					onClick={() => setdialogOpen(true)}
-				>
+					onClick={() => {
+						initFormState = {
+							catName: '',
+							featuredImg: '',
+						}
+						setMode("Add")
+						setdialogOpen(true)
+					 }
+				    }
+			   >
 					<div className="flex flex-col justify-center items-center py-5">
 						<div className="p-4 border-2 border-dashed rounded-full border-gray-400 dark:border-gray-600 group-hover:border-indigo-600">
 							<HiOutlinePlus className="text-4xl text-gray-600 dark:text-gray-600 group-hover:text-indigo-600" />
@@ -386,6 +466,27 @@ const CategorySection = ({data}) => {
 										disabled={syncDisabled}
 										onClick={() => deleteCategory(category.id, category.posts)}
 										icon={<GrTrash className='opacity-70' />} 
+									/>
+								</Tooltip>
+								<Tooltip title="Edit">
+									<Button 
+										shape="circle" 
+										variant="plain"
+										size="sm" 
+										disabled={syncDisabled}
+										onClick={() => {
+											const { id, name, featured_imghd, featured_imgsd } = category
+											initFormState = {
+												catName: name,
+												featuredImg: featured_imghd,
+											}
+											setMode("Edit")
+											setfiImgUrl(featured_imghd)
+											setCategoryId(id)
+											fihd = featured_imghd; fisd = featured_imgsd;
+											setdialogOpen(true)
+										}}
+										icon={<GrEdit className='opacity-70' />} 
 									/>
 								</Tooltip>
 								{/* <Tooltip title="Sync">

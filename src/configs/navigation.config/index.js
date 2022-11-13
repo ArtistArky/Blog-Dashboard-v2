@@ -16,6 +16,16 @@ const navigationConfig = [
         subMenu: []
     },
     /** Example purpose only */
+	{
+        key: 'analytics',
+		path: '/analytics',
+		title: 'Analytics',
+		translateKey: 'nav.analytics',
+		icon: 'analytics',
+		type: NAV_ITEM_TYPE_ITEM,
+		authority: [],
+        subMenu: []
+    },
     {
         key: 'posts',
 		path: '/posts',
