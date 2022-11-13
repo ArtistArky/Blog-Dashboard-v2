@@ -88,7 +88,7 @@ const SignInForm = props => {
 	//console.log(user);
 
 	return (
-		<div className={className}>
+		<div className={`overflow-x-hidden ${className}`}>
 			{message && <Alert className="mb-4" type="danger" showIcon>{message}</Alert>}
 			<Formik
 				initialValues={{
@@ -152,7 +152,7 @@ const SignInForm = props => {
 								src={googleSvg}
 								alt={'Google'}
 								/>} type="submit">
-								{ isSubmitting ? 'Signing in...' : 'Sign In With Google' }
+								Sign In With Google
 							</Button>
 						</FormContainer>
 					</Form>
