@@ -88,6 +88,7 @@ function ReactTable({ columns, data }) {
 		.from('newsletter')
 		.delete()
 		.in('id', deleteIDs)
+		.select()
 
 		if(error) {
 			setdeleteDisabled(false)

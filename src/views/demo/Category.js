@@ -268,7 +268,8 @@ const CategorySection = ({data}) => {
                         { featured_imghd: fihd, featured_imgsd: fisd, href: categoryUrl }
                     )
                     .eq('id', categoryId)
-                    .eq('createdby', authID);
+                    .eq('createdby', authID)
+					.select();
                     if(error) {
                         setBtn(false)
                         openNotification('danger', error.message)
@@ -337,7 +338,8 @@ const CategorySection = ({data}) => {
 			{ title: catTitle, name: catName, featured_imghd: fihd, featured_imgsd: fisd, href: catUrl }
 		)
 		.eq('id', categoryId)
-		.eq('createdby', authID);
+		.eq('createdby', authID)
+		.select();
 		if(error) {
 			setBtn(false)
 			openNotification('danger', error.message)

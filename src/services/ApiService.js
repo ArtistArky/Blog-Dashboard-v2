@@ -33,16 +33,17 @@ export async function sbUpload(bucket, imagepath, image) {
         return error
     }
     if(data) {
-        const { publicURL, error } = await supabaseClient.storage
+        const { data: {publicUrl}, error } = await supabaseClient.storage
           .from(bucket)
           .getPublicUrl(imagepath);
+        const publicURL = publicUrl
 
         return { error, publicURL };
     }
 }
 
 export async function sbUpdate(table, authId, updateData, type) {
-    const { data, error } = await supabaseClient.from(table).update(updateData).eq(type, authId);
+    const { data, error } = await supabaseClient.from(table).update(updateData).eq(type, authId).select();
       
     return { error, data };
 }
@@ -59,7 +60,7 @@ export async function checkDetails(user, type, query, table) {
 }
 
 export async function sbInsert(table, insertData) {
-    const { data, error } = await supabaseClient.from(table).insert(insertData, { upsert: true });
+    const { data, error } = await supabaseClient.from(table).insert(insertData, { upsert: true }).select();
       
     return { error, data };
 }
@@ -97,6 +98,7 @@ export async function sbDelete(table, id) {
     .from(table)
     .delete()
     .eq('id', id)
+    .select();
 
     return { error, data };
 }
@@ -107,6 +109,7 @@ export async function sbUserDataDelete(table, type, authId, type2, authId2) {
         .delete()
         .eq(type, authId)
         .eq(type2, authId2)
+        .select();
 
     return { error, data };
 }

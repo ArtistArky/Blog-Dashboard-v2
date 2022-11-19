@@ -59,23 +59,24 @@ function useAuth() {
 					message: resp.error?.message || resp.error.toString()
 				}
 			}
-			if (resp.session && resp.user) {
-				const { access_token } = resp.session
-				dispatch(onSignInSuccess(access_token))
-				if(resp.user) {
-					dispatch(setUser(resp.user || { 
-						avatar: '', 
-						userName: 'Anonymous', 
-						authority: ['USER'], 
-						email: ''
-					}))
-				}
-				//const redirectUrl = query.get(REDIRECT_URL_KEY)
-				navigate(appConfig.authenticatedEntryPath)
-                return {
-                    status: 'success',
-                    message: ''
-                }
+			if (resp.data) {
+				console.log(resp.data)
+				// const { access_token } = resp.session
+				// dispatch(onSignInSuccess(access_token))
+				// if(resp.user) {
+				// 	dispatch(setUser(resp.user || { 
+				// 		avatar: '', 
+				// 		userName: 'Anonymous', 
+				// 		authority: ['USER'], 
+				// 		email: ''
+				// 	}))
+				// }
+				// //const redirectUrl = query.get(REDIRECT_URL_KEY)
+				// navigate(appConfig.authenticatedEntryPath)
+                // return {
+                //     status: 'success',
+                //     message: ''
+                // }
 			}
 		} catch (errors) {
 			return {

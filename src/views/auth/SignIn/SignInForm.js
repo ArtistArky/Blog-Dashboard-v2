@@ -50,8 +50,13 @@ const SignInForm = props => {
 
 	useEffect(() => {
 		const getAuthUser = async () => {
-			const user = await supabaseClient.auth.user();
-			const session = await supabaseClient.auth.session();
+			var user
+			const { data: { session }} = await supabaseClient.auth.getSession()
+			if(session) {
+				user = session.user
+			}else {
+				user = null
+			}
 			return {user, session};
 		}
 		getAuthUser().then((res) => {
@@ -60,6 +65,7 @@ const SignInForm = props => {
 				console.log(res.user);
 			}else {
 				console.log(res.user);
+				console.log(res.session);
 				const { access_token, provider_token } = res.session
 				dispatch(onSignInSuccess({
 					access_token, 
