@@ -101,6 +101,7 @@ const Step3 = ({ onNext, onBack }) => {
 	
 	const checkImgs = (values) => { 
 		const { logoimg, faviconimg } = values;
+		console.log(logoimg, faviconimg)
 
         var images = [];
         var name = [];

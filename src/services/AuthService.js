@@ -10,14 +10,14 @@ export async function apiSignIn (data) {
 }
 
 export async function sbGoogleSignin () {
-    const { user, session, error } = await supabaseClient.auth.signIn({
-        provider: 'google'
-    },
-    {
-        scopes: 'https://www.googleapis.com/auth/drive.readonly',
+    const { data, error } = await supabaseClient.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            scopes: 'https://www.googleapis.com/auth/drive.readonly'
+        }
     })
     return {
-        user, session, error
+        data, error
     }
 }
 
