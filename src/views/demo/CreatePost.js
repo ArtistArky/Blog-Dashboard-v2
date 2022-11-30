@@ -125,7 +125,9 @@ const CreatePost = ({ data }) => {
   };
 
   const createPicker = async () => {
-    const { data:{session} } = await supabaseClient.auth.getSession();
+    const {
+      data: { session },
+    } = await supabaseClient.auth.getSession();
     console.log(session);
     console.log(provider);
     if (provider) {
@@ -253,22 +255,23 @@ const CreatePost = ({ data }) => {
             .then(async (response) => {
               console.log(response.data);
 
-              const insertData = [
-                {
-                  id: postId,
-                  posttitle: postTitle,
-                  title: title,
-                  category: category,
-                  post: response.data,
-                  postedby: authID,
-                  docsid: docs,
-                },
-              ];
+              const insertData = {
+                id: postId,
+                posttitle: postTitle,
+                title: title,
+                category: category,
+                post: response.data,
+                postedby: authID,
+                docsid: docs,
+              };
+
+              console.log(insertData);
 
               await sbInsert("posts", insertData).then(async (res) => {
                 if (res.error) {
                   setBtn(false);
-                  openNotification("danger", error.message);
+                  console.log(res.error);
+                  openNotification("danger", res.error.message);
                 }
                 if (res.data) {
                   openNotification(
@@ -296,7 +299,7 @@ const CreatePost = ({ data }) => {
                         }
                         if (publicURL) {
                           const mainurl =
-                          publicURL + "?" + new Date().getTime();
+                            publicURL + "?" + new Date().getTime();
                           imagesName[i] === "hd.jpeg"
                             ? (fihd = mainurl)
                             : (fisd = mainurl);
@@ -352,7 +355,7 @@ const CreatePost = ({ data }) => {
               setBtn(false);
               console.log("Test");
               console.log(error);
-              openNotification("danger", error.message);
+              //openNotification("danger", error.message);
             });
         }
       }

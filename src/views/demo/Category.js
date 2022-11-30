@@ -281,6 +281,7 @@ const CategorySection = ({data}) => {
                         dispatch(setCategoryData(catData))
                         setBtn(false)
                         setdialogOpen(false) 
+						window.location.reload()
                     }
 
                 }

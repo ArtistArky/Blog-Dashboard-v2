@@ -372,19 +372,24 @@ const PostSection = ({ data }) => {
     // console.log(catId);
 
     // if(category != catId) {
-    //   const { data, error } = await supabaseClient
-    //   .rpc('update_category_posts2', {category: category})
+    //   const { data, error } = await supabaseClient.rpc('update_category_posts_rpc', {category:category})
 
     //   if(error) {
-    //     console.log(data)
+    //     console.log(error)
 
     //   }
     //   console.log(data)
-    //   setBtn(false)
-    //   return data
     // }
     // console.log("Outside")
     // setBtn(false);
+
+//     begin
+//   IF UPDATING AND (old.category = new.category) THEN UPDATE public.category SET posts = posts + 1 WHERE id = new.category;
+//   ELSIF INSERTING THEN UPDATE public.category SET posts = posts + 1 WHERE id = new.category;
+     
+//   return new;
+// end;
+    
     const postUrl = "/posts/" + postTitle;
 
     const { data, error } = await supabaseClient
