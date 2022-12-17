@@ -227,7 +227,7 @@ const CreatePost = ({ data }) => {
 
     const options = {
       method: "GET",
-      url: "https://stensil-backend.herokuapp.com/api",
+      url: "https://0zmogq-5000.preview.csb.app/api",
       params: {
         fileId: docs,
         accessToken: provider,
