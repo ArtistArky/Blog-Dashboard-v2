@@ -12,11 +12,15 @@ import AsyncSelect from 'react-select/async'
 const validationSchema = Yup.object().shape({
 	blogName: Yup.string().required('Blog name is required').matches(
 		/^([a-z0-9]){6,30}$/,
-		"Blog name can only contain lowercase alphabets & digits with a reange of 6-30 characters"
+		"Blog name can only contain lowercase alphabets & digits with a range of 6-30 characters"
 	  ),
 	title: Yup.string().required('Blog title is required').matches(
 		/^([A-Za-z0-9 \u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff] ]){3,500}$/,
-		"Blog Title can only contain alphabets & digits with a reange of 6-30 characters"
+		"Blog Title can only contain alphabets & digits with a range of 6-30 characters"
+	  ),
+	metatitle: Yup.string().required('Meta title is required').matches(
+		/^([A-Za-z0-9 \u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff] ]){3,500}$/,
+		"Meta Title can only contain alphabets & digits with a range of 6-30 characters"
 	  ),
 	timezone: Yup.string().required('Time Zone is required for viewing the Analytics'),
 })
@@ -72,6 +76,7 @@ const Step2 = ({ onNext, onBack }) => {
 					initialValues={{
 						blogName: stepone.blog_name,
 						title: stepone.title,
+						metatitle: stepone.metatitle,
 						timezone: stepone.timezone
 					}}
 					validationSchema={validationSchema}
@@ -114,6 +119,19 @@ const Step2 = ({ onNext, onBack }) => {
 											component={Input} 
 										/>
 										<ErrorMessage name="title"  render={msg => <div className='text-red-500 text-left'>{msg}</div>} />
+									</FormItem>
+									<FormItem
+										label="Meta title"
+										invalid={errors.metatitle && touched.metatitle}
+									>
+										<Field 
+											type="text" 
+											autoComplete="off" 
+											name="metatitle" 
+											placeholder="Meta title..." 
+											component={Input} 
+										/>
+										<ErrorMessage name="metatitle"  render={msg => <div className='text-red-500 text-left'>{msg}</div>} />
 									</FormItem>
 									<FormItem 
 										label="Time Zone"

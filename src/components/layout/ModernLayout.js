@@ -35,6 +35,9 @@ const HeaderActionsEnd = () => {
 
   return (
     <>
+      <div className="mr-5">
+        <SidePanel />
+      </div>
       <div className="mr-3">
         <Button
           onClick={() => navigate("/app/create-post")}
@@ -45,7 +48,6 @@ const HeaderActionsEnd = () => {
           <b className="text-20">+</b>&nbsp;&nbsp;Create
         </Button>
       </div>
-      <SidePanel />
       <UserDropdown hoverable={false} />
     </>
   );
@@ -120,7 +122,7 @@ const ModernLayout = (props) => {
       <div className="app-layout-modern flex flex-auto flex-col">
         <div className="flex flex-auto min-w-0">
           {onboardStatus === true && <SideNav />}
-          <div className="flex flex-col flex-auto min-h-screen min-w-0 relative w-full bg-white dark:bg-white border-l border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col flex-auto min-h-screen min-w-0 relative w-full bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700">
             <Header
               className="border-b border-gray-200 dark:border-gray-700"
               headerEnd={<HeaderActionsEnd />}

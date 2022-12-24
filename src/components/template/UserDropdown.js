@@ -9,9 +9,7 @@ import { HiOutlineUser, HiOutlineCog, HiOutlineLogout } from 'react-icons/hi'
 import { FiActivity } from 'react-icons/fi'
 
 const dropdownItemList = [
-	{ label: 'Profile', path: '/single-menu-view', icon: <HiOutlineUser /> },
 	{ label: 'Account Setting', path: '/app/account/settings/profile', icon: <HiOutlineCog /> },
-	{ label: 'Activity Log', path: '/app/account/activity-log', icon: <FiActivity /> },
 ]
 
 export const UserDropdown = ({ className }) => {

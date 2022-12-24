@@ -3,6 +3,7 @@ import { createSlice } from '@reduxjs/toolkit'
 export const initialState = {
     blog_name: '',
     title: '',
+    metatitle: '',
     timezone: '',
     description: '',
     logoimg: null,
@@ -16,6 +17,7 @@ export const onboardSlice = createSlice({
         stepOne: (state, action) => {
             state.blog_name = action.payload.blogName
             state.title = action.payload.title
+            state.metatitle = action.payload.metatitle
             state.timezone = action.payload.timezone
         },
         stepTwo: (state, action) => {
