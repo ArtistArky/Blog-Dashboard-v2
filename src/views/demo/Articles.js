@@ -46,7 +46,7 @@ import {
 } from "services/ApiService";
 import axios from "axios";
 import { HiOutlinePlus } from "react-icons/hi";
-import { GrTrash, GrEdit, GrSync } from "react-icons/gr";
+import { BiTrash, BiEditAlt, BiSync } from "react-icons/bi";
 import { PostContext, useGlobalContext } from "utils/context/postContext";
 import * as Yup from "yup";
 import Compress from "browser-image-compression";
@@ -383,13 +383,13 @@ const PostSection = ({ data }) => {
     // console.log("Outside")
     // setBtn(false);
 
-//     begin
-//   IF UPDATING AND (old.category = new.category) THEN UPDATE public.category SET posts = posts + 1 WHERE id = new.category;
-//   ELSIF INSERTING THEN UPDATE public.category SET posts = posts + 1 WHERE id = new.category;
-     
-//   return new;
-// end;
-    
+    //     begin
+    //   IF UPDATING AND (old.category = new.category) THEN UPDATE public.category SET posts = posts + 1 WHERE id = new.category;
+    //   ELSIF INSERTING THEN UPDATE public.category SET posts = posts + 1 WHERE id = new.category;
+
+    //   return new;
+    // end;
+
     const postUrl = "/posts/" + postTitle;
 
     const { data, error } = await supabaseClient
@@ -553,7 +553,11 @@ const PostSection = ({ data }) => {
               />
             </div>
             <div className="flex items-center justify-between mt-4">
-              <Avatar className="mr-4" src={article.featured_imgsd} />
+              <Avatar
+                className="mr-4"
+                shape="circle"
+                src={article.featured_imgsd}
+              />
               <div className="flex">
                 <Tooltip title="Delete">
                   <Button
@@ -567,7 +571,7 @@ const PostSection = ({ data }) => {
                       setpostid(article.id);
                       setconfirmdialogOpen(true);
                     }}
-                    icon={<GrTrash className="opacity-70" />}
+                    icon={<BiTrash />}
                   />
                 </Tooltip>
                 <Tooltip title="Edit">
@@ -606,7 +610,7 @@ const PostSection = ({ data }) => {
                       fisd = featured_imgsd;
                       setdialogOpen(true);
                     }}
-                    icon={<GrEdit className="opacity-70" />}
+                    icon={<BiEditAlt />}
                   />
                 </Tooltip>
                 <Tooltip title="Sync">
@@ -618,7 +622,7 @@ const PostSection = ({ data }) => {
                     onClick={() =>
                       syncPost(article.docsid, article.posttitle, article.id)
                     }
-                    icon={<GrSync className="opacity-70" />}
+                    icon={<BiSync size={22} />}
                   />
                 </Tooltip>
               </div>

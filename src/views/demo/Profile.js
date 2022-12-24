@@ -74,6 +74,7 @@ const Profile = ({ data }) => {
     faviconimg,
     cus_domain,
     cus_domain_d,
+    prev_name,
   } = useSelector((state) => state.userData.author);
   const authID = useSelector((state) => state.auth.user.id);
 
@@ -244,6 +245,7 @@ const Profile = ({ data }) => {
           const updateData = {
             username: domainD[0],
             cus_domain: domainD[1],
+            prev_name: username,
           };
           await sbUpdate("authors", authID, updateData, "id").then(
             ({ error, data }) => {
@@ -285,7 +287,8 @@ const Profile = ({ data }) => {
     axios
       .request(options)
       .then(async function (response) {
-        var { apx_hit, dns_pointed_at, has_ssl, is_resolving } = response.data;
+        var { apx_hit, dns_pointed_at, has_ssl, is_resolving } =
+          response.data.data;
 
         const updateData = {
           cus_domain_d: [
@@ -303,6 +306,53 @@ const Profile = ({ data }) => {
         setdomainDet(updateData.cus_domain_d);
         openNotification("success", "Status Reloaded");
         setcsbtnDisabled(false);
+      })
+      .catch(function (error) {
+        openNotification("danger", error.message);
+        setcsbtnDisabled(false);
+      });
+  };
+
+  const cusdomainStatDelete = async (cusDomain) => {
+    setcsbtnDisabled(true);
+    openNotification("info", "Deleting....");
+
+    const options = {
+      method: "GET",
+      url: "https://0zmogq-5000.preview.csb.app/api/cus-domain/delete",
+      params: {
+        incomingDomain: cusDomain,
+      },
+    };
+
+    axios
+      .request(options)
+      .then(async function (response) {
+        var res = response.data;
+        console.log(res);
+
+        const updateData = {
+          username: prev_name,
+          cus_domain: null,
+          prev_name: null,
+        };
+        await sbUpdate("authors", authID, updateData, "id").then(
+          ({ error, data }) => {
+            if (error) {
+              setBtn(false);
+              openNotification("danger", error.message);
+            }
+            if (data) {
+              setBtn(false);
+              dispatch(updateCusDomain(updateData));
+              openNotification(
+                "success",
+                "Custom Domain Deleted successfully...."
+              );
+              window.location.reload();
+            }
+          }
+        );
       })
       .catch(function (error) {
         openNotification("danger", error.message);
@@ -454,7 +504,7 @@ const Profile = ({ data }) => {
                       domainDet[1].status,
                       domainDet[2].status,
                       domainDet[3].status,
-                    ].includes("false") === true ? (
+                    ].includes(false) === true ? (
                       <Alert className="mb-5" showIcon>
                         In order to connect your domain, you'll need to have a
                         DNS A record that points testdomainmi.tk at{" "}
@@ -481,9 +531,9 @@ const Profile = ({ data }) => {
                       <TBody>
                         <Tr>
                           <Td>{username + "." + cus_domain}</Td>
-                          {domainDet.map((item) => (
-                            <Td id={item.name}>
-                              {item.status === null ? (
+                          {domainDet.map((item, index) => (
+                            <Td id={index}>
+                              {item.status === false ? (
                                 <HiBan className="opacity-60" />
                               ) : (
                                 <HiCheck className="opacity-60" />
@@ -511,6 +561,12 @@ const Profile = ({ data }) => {
                               variant="plain"
                               size="xs"
                               disabled={csbtnDisabled}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                cusdomainStatDelete(
+                                  username + "." + cus_domain
+                                );
+                              }}
                               icon={<AiOutlineDelete />}
                             />
                           </Td>

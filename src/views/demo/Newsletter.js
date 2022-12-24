@@ -35,8 +35,6 @@ function ReactTable({ columns, data }) {
 	const { setLoading, fetchSub } = useGlobalContext()
 
 	const headers = [
-		{ label: "ID", key: "id" },
-		{ label: "Name", key: "name" },
 		{ label: "Email", key: "email" },
 		{ label: "Date", key: "created_at" }
 	];
@@ -81,13 +79,13 @@ function ReactTable({ columns, data }) {
 	const deleteSub = async () => {
 		setdeleteDisabled(true)
 		const deleteIDs = [];
-		selectedFlatRows.map(sel => { deleteIDs.push(sel.original.id) })
+		selectedFlatRows.map(sel => { deleteIDs.push(sel.original.email) })
 		console.log(deleteIDs)
 
 		const { data, error } = await supabaseClient
 		.from('newsletter')
 		.delete()
-		.in('id', deleteIDs)
+		.in('email', deleteIDs)
 		.select()
 
 		if(error) {
@@ -197,7 +195,7 @@ const Newsletter = () => {
 		
 		const { data, error } = await supabaseClient
         .from('newsletter')
-        .select(`id, name, email, created_at`)
+        .select(`email, created_at`)
         .eq('author', authID)
         .order('created_at', { ascending: false })
 		
@@ -213,14 +211,6 @@ const Newsletter = () => {
 	}
 	
 	const columns = [
-		{
-			Header: 'Id',
-			accessor: 'id',
-		},
-		{
-			Header: 'Name',
-			accessor: 'name',
-		},
 		{
 			Header: 'Email',
 			accessor: 'email',

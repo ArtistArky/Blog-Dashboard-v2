@@ -23,6 +23,8 @@ export const initialState = {
     { name: "Resolving", status: false },
     { name: "SSL", status: false },
   ],
+  prev_name: null,
+  metatitle: "",
 };
 
 export const authorSlice = createSlice({
@@ -37,6 +39,7 @@ export const authorSlice = createSlice({
       state.logoimg = action.payload.logoimg;
       state.faviconimg = action.payload.faviconimg;
       state.aurl = action.payload.aurl;
+      state.metatitle = action.payload.metatitle;
     },
     updateAuthorPosts: (state, action) => {
       state.posts = action.payload;
@@ -50,6 +53,7 @@ export const authorSlice = createSlice({
     updateCusDomain: (state, action) => {
       state.username = action.payload.username;
       state.cus_domain = action.payload.cus_domain;
+      state.prev_name = action.payload.prev_name;
     },
     updateCusDomainD: (state, action) => {
       state.cus_domain_d = action.payload.cus_domain_d;

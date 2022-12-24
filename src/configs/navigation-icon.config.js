@@ -1,23 +1,21 @@
-import React from 'react'
+import React from "react";
+
 import {
-    HiOutlineColorSwatch, 
-	HiOutlineDesktopComputer,
-    HiOutlineTemplate,
-    HiOutlineViewGridAdd,
-    HiOutlineHome
-} from 'react-icons/hi'
-
-import { BiCategory, BiNavigation, BiUserPin } from "react-icons/bi"
-
-import { GrHome,  GrDocumentImage, GrAnalytics } from "react-icons/gr";
+  BiCategory,
+  BiNavigation,
+  BiUserPin,
+  BiHome,
+  BiBarChartAlt2,
+  BiDetail,
+} from "react-icons/bi";
 
 const navigationIcon = {
-    home: <GrHome className='opacity-60' />,
-    analytics: <GrAnalytics className='opacity-60' />,
-    posts: <GrDocumentImage className='opacity-60' />,
-    category: <BiCategory />,
-    navigation: <BiNavigation />,
-    newsletter: <BiUserPin className='opacity-80' />,
-}
+  home: <BiHome />,
+  analytics: <BiBarChartAlt2 />,
+  posts: <BiDetail />,
+  category: <BiCategory />,
+  navigation: <BiNavigation />,
+  newsletter: <BiUserPin className="opacity-80" />,
+};
 
-export default navigationIcon
+export default navigationIcon;

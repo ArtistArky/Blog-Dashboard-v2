@@ -6,6 +6,7 @@ import SidePanelContent from './SidePanelContent'
 import withHeaderItem from 'utils/hoc/withHeaderItem'
 import { setPanelExpand } from 'store/theme/themeSlice'
 import { useSelector, useDispatch } from 'react-redux'
+import ModeSwitcher from 'components/template/ThemeConfigurator/ModeSwitcher'
 
 export const SidePanel = props => {
 
@@ -17,24 +18,22 @@ export const SidePanel = props => {
 
 	const direction = useSelector((state) => state.theme.direction)
 
-	const openPanel = () => {
-		dispatch(setPanelExpand(true))
-	}
+	// const openPanel = () => {
+	// 	dispatch(setPanelExpand(true))
+	// }
 
-	const closePanel = () => {
-		dispatch(setPanelExpand(false))
-		const bodyClassList = document.body.classList
-		if (bodyClassList.contains('drawer-lock-scroll')) {
-			bodyClassList.remove('drawer-lock-scroll', 'drawer-open')
-		}
-	}
+	// const closePanel = () => {
+	// 	dispatch(setPanelExpand(false))
+	// 	const bodyClassList = document.body.classList
+	// 	if (bodyClassList.contains('drawer-lock-scroll')) {
+	// 		bodyClassList.remove('drawer-lock-scroll', 'drawer-open')
+	// 	}
+	// }
 
 	return (
 		<>
-			<div className={classNames('text-2xl', className)} onClick={openPanel} {...rest}>
-				<HiOutlineCog />
-			</div>
-			<Drawer
+			<ModeSwitcher />
+			{/* <Drawer
 				title="Theme Config"
 				isOpen={panelExpand}
 				onClose={closePanel}
@@ -43,7 +42,7 @@ export const SidePanel = props => {
 				width={375}
 			>
 				<SidePanelContent callBackClose={closePanel} />
-			</Drawer>
+			</Drawer> */}
 		</>
 	)
 }
